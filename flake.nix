@@ -11,6 +11,7 @@
           packages = with pkgs; with elmPackages; [
             elm
             elm-language-server
+            elm-format
             elm2nix
             nodejs
             yarn
