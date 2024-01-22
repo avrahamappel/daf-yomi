@@ -1,0 +1,18 @@
+{
+  "name": "daf-yomi",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.8",
+    "vite-plugin-elm": "^2.9.0"
+  },
+  "dependencies": {
+    "@hebcal/learning": "^5.0.2"
+  }
+}
