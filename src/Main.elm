@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Browser
+import Html exposing (Html, div, p, text)
 
 
 type Model
@@ -21,21 +22,25 @@ main =
         }
 
 
-init : a -> ( Model, Cmd a )
+init : () -> ( Model, Cmd a )
 init _ =
     ( Model, Cmd.none )
 
 
-view : a
-view =
-    Debug.todo "TODO"
+view : Model -> Html Msg
+view _ =
+    div []
+        [ p [] [ text "January 22, 2024" ]
+        , p [] [ text "12 Shevat, 5784" ]
+        , p [] [ text "Bava Kamma 81" ]
+        ]
 
 
-update : a
-update =
-    Debug.todo "TODO"
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
 
 
-subscriptions : a
-subscriptions =
-    Debug.todo "TODO"
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
