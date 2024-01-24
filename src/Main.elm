@@ -1,15 +1,27 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Html exposing (Html, div, p, text)
+import Task
+import Time
 
 
-type Model
-    = Model
+type alias DafAndDate =
+    { date : String, hdate : String, dafYomi : String }
 
 
-type Msg
-    = None
+
+-- PORTS
+
+
+port getDafAndDate : Int -> Cmd msg
+
+
+port returnDafAndDate : (DafAndDate -> msg) -> Sub msg
+
+
+
+-- MAIN
 
 
 main : Program () Model Msg
@@ -22,25 +34,65 @@ main =
         }
 
 
-init : () -> ( Model, Cmd a )
+
+-- MODEL
+
+
+type Model
+    = AwaitingDaf
+    | HasDaf DafAndDate
+
+
+init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model, Cmd.none )
+    ( AwaitingDaf, Task.perform AdjustTimestamp Time.now )
 
 
-view : Model -> Html Msg
-view _ =
-    div []
-        [ p [] [ text "January 22, 2024" ]
-        , p [] [ text "12 Shevat, 5784" ]
-        , p [] [ text "Bava Kamma 81" ]
-        ]
+
+-- UPDATE
+
+
+type Msg
+    = None
+    | AdjustTimestamp Time.Posix
+    | SetDafAndDate DafAndDate
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+update msg model =
+    case msg of
+        None ->
+            ( model, Cmd.none )
+
+        AdjustTimestamp pos ->
+            ( AwaitingDaf, getDafAndDate (Time.posixToMillis pos) )
+
+        SetDafAndDate dd ->
+            ( HasDaf dd, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    returnDafAndDate SetDafAndDate
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+    case model of
+        AwaitingDaf ->
+            div [] [ text "Loading today's daf..." ]
+
+        HasDaf dd ->
+            div []
+                [ p [] [ text dd.date ]
+                , p [] [ text dd.hdate ]
+                , p [] [ text dd.dafYomi ]
+                ]

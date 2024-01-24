@@ -13,6 +13,8 @@
     "vite-plugin-elm": "^2.9.0"
   },
   "dependencies": {
-    "@hebcal/learning": "^5.0.2"
+    "@hebcal/core": "^5.0.2",
+    "@hebcal/learning": "^5.0.2",
+    "temporal-polyfill": "^0.1.1"
   }
 }

@@ -117,7 +117,7 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.19.11.tgz#a5d300008960bb39677c46bf16f53ec70d8dee04"
   integrity sha512-vfkhltrjCAb603XaFhqhAF4LGDi2M4OrCRrFusyQ+iTLQ/o60QQXxc9cZC/FFpihBI9N1Grn6SMKVJ4KP7Fuiw==
 
-"@hebcal/core@^5.0.3":
+"@hebcal/core@^5.0.2", "@hebcal/core@^5.0.3":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@hebcal/core/-/core-5.1.0.tgz#945c73aad24ed94d49bd47ee5274149852f3b21a"
   integrity sha512-/3YNXkNtXB0+3GsbdPzzmM77Xi61tY//ePSVrguS6IOnyFnH/s6ozfFQl4VQgaZimqQ9zj5zo2D1v5vf90ajAw==
@@ -494,6 +494,18 @@ temp@^0.9.0:
   dependencies:
     mkdirp "^0.5.1"
     rimraf "~2.6.2"
+
+temporal-polyfill@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/temporal-polyfill/-/temporal-polyfill-0.1.1.tgz#093d3a5c29278b689362420502dd82a3f576b5c2"
+  integrity sha512-/5e4EVRA0wBI/bEhWLirSjwUg1lELhQyTXxw9zNbVhqjKvI9BLczs+3wtsoD9sn3HN2ImAMW5XJQwAiXgWT+GA==
+  dependencies:
+    temporal-spec "~0.1.0"
+
+temporal-spec@~0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/temporal-spec/-/temporal-spec-0.1.0.tgz#f50cf6eb3b5b40175743ee9fc84afe27c785324b"
+  integrity sha512-sMNggMeS6trCgMQuudgFHhX1gtBK3e+AT1zGrMsFYG1wlqtRT5E9rcvm3I1iNlvHpJX/3DO6L4qtWAuEl/T04Q==
 
 vite-plugin-elm@^2.9.0:
   version "2.9.0"
