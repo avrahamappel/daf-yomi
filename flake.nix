@@ -6,6 +6,15 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
+        kaiosEnv = (pkgs.callPackage
+          (pkgs.fetchFromGitHub {
+            owner = "fmnxl";
+            repo = "nix-kaiosenv";
+            rev = "20bf3b84d90a0476cb453fe496a283d807bb4b87";
+            sha256 = "sha256-JQqeoosYjdFsViR/kmtWgTjqNhFN4eD4oZQJ65L60B4=";
+          })
+          { }).package;
+
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
       in
@@ -16,6 +25,7 @@
             elm-language-server
             elm-format
             elm2nix
+            kaiosEnv
             nodejs
           ];
         };
