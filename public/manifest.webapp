@@ -1,0 +1,14 @@
+{
+    "version": "0.0.1",
+    "name": "Daf Yomi",
+    "description": "Today's daf",
+    "icons": {
+        "56": ""
+    },
+    "developer": {
+        "name": "Avraham"
+    },
+    "categories": [
+        "utilities"
+    ]
+}

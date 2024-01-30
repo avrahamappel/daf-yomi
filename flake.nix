@@ -5,6 +5,9 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+
+        packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+        elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
       in
       {
         devShells.default = pkgs.mkShell {
@@ -14,17 +17,23 @@
             elm-format
             elm2nix
             nodejs
-            yarn
-            yarn2nix
           ];
         };
 
-        packages.default = pkgs.mkYarnPackage {
-          name = "daf-yomi";
+        packages.default = pkgs.buildNpmPackage {
+          pname = packageJson.name;
+          version = packageJson.version;
           src = ./.;
-          packageJSON = ./package.json;
-          yarnLock = ./yarn.lock;
-          yarnNix = ./yarn.nix;
+          npmDepsHash = "sha256-0SiITCk/67iZzxPKz8SXfoIjamBCPhYA0MrSuHwgVrc=";
+          nativeBuildInputs = with pkgs; [ elmPackages.elm ];
+          configurePhase = pkgs.elmPackages.fetchElmDeps {
+            elmPackages = import ./elm-srcs.nix;
+            elmVersion = elmJson.elm-version;
+            registryDat = ./registry.dat;
+          };
+          postInstall = ''
+            cp -r dist $out/
+          '';
         };
       }
     );
