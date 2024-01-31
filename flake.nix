@@ -15,12 +15,22 @@
           })
           { }).package;
 
+        palemoon = pkgs.palemoon-bin.overrideAttrs (final: {
+          version = "28.6.1";
+          src = pkgs.fetchzip {
+            url = "http://archive.palemoon.org/palemoon/28.x/28.6.1/palemoon-28.6.1.linux-x86_64.tar.bz2";
+            hash = "sha256-IQ6cbCtPhX5IdEAIpMemk4NdwVVPbbIUue2jgYZTdoo=";
+          };
+        });
+
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
       in
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; with elmPackages; [
+            palemoon
+            usbutils
             elm
             elm-language-server
             elm-format
