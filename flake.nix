@@ -20,20 +20,26 @@
           ];
         };
 
-        packages.default = pkgs.buildNpmPackage {
-          pname = packageJson.name;
-          version = packageJson.version;
-          src = ./.;
-          npmDepsHash = "sha256-0SiITCk/67iZzxPKz8SXfoIjamBCPhYA0MrSuHwgVrc=";
-          nativeBuildInputs = with pkgs; [ elmPackages.elm ];
-          configurePhase = pkgs.elmPackages.fetchElmDeps {
-            elmPackages = import ./elm-srcs.nix;
-            elmVersion = elmJson.elm-version;
-            registryDat = ./registry.dat;
+        packages = {
+          default = pkgs.buildNpmPackage {
+            pname = packageJson.name;
+            version = packageJson.version;
+            src = ./.;
+            npmDepsHash = "sha256-0SiITCk/67iZzxPKz8SXfoIjamBCPhYA0MrSuHwgVrc=";
+            nativeBuildInputs = with pkgs; [ elmPackages.elm ];
+            configurePhase = pkgs.elmPackages.fetchElmDeps {
+              elmPackages = import ./elm-srcs.nix;
+              elmVersion = elmJson.elm-version;
+              registryDat = ./registry.dat;
+            };
+            postInstall = ''
+              cp -r dist $out/
+            '';
           };
-          postInstall = ''
-            cp -r dist $out/
-          '';
+
+          githubPages = self.packages.${system}.default.overrideAttrs {
+            npmBuildFlags = [ "--" "--base" "/daf-yomi" ];
+          };
         };
       }
     );
