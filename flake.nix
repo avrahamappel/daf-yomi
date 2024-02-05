@@ -23,6 +23,14 @@
           };
         });
 
+        gdeploy = pkgs.buildNpmPackage {
+          name = "gdeploy";
+          src = ./gdeploy;
+          makeCacheWritable = true;
+          dontNpmBuild = true;
+          npmDepsHash = "sha256-IiHYrFd47m4sp/HDamqjQorTY2iHDG5lQ6+r02Ay6y0=";
+        };
+
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
       in
@@ -31,6 +39,7 @@
           packages = with pkgs; with elmPackages; [
             palemoon
             usbutils
+            gdeploy
             elm
             elm-language-server
             elm-format

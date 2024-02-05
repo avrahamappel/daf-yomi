@@ -1,0 +1,31 @@
+{
+  "name": "gdeploy",
+  "version": "0.0.1",
+  "description": "CLI application manager for KaiOS (replacement for kdeploy)",
+  "main": "main.js",
+  "dependencies": {
+    "firefox-client": "^1.0.0",
+    "node-firefox-connect": "git+https://github.com/plugnburn/node-firefox-connect.git",
+    "node-firefox-install-app": "git+https://github.com/plugnburn/node-firefox-install-app.git"
+  },
+  "bin": {
+    "gdeploy": "./main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/suborg/gdeploy.git"
+  },
+  "keywords": [
+    "kaios",
+    "jailbreak",
+    "application",
+    "installer",
+    "debug"
+  ],
+  "author": "BananaHackers group",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://gitlab.com/suborg/gdeploy/issues"
+  },
+  "homepage": "https://gitlab.com/suborg/gdeploy#readme"
+}
