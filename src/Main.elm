@@ -39,14 +39,20 @@ main =
 -- MODEL
 
 
-type Model
+type alias Model =
+    { cur_time : Time.Posix
+    , state : State
+    }
+
+
+type State
     = AwaitingDaf
     | HasDaf DafAndDate
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( AwaitingDaf, Task.perform AdjustTimestamp Time.now )
+    ( Model (Time.millisToPosix 0) AwaitingDaf, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -66,10 +72,10 @@ update msg model =
             ( model, Cmd.none )
 
         AdjustTimestamp pos ->
-            ( AwaitingDaf, getDafAndDate (Time.posixToMillis pos) )
+            ( { model | cur_time = pos }, getDafAndDate (Time.posixToMillis pos) )
 
         SetDafAndDate dd ->
-            ( HasDaf dd, Cmd.none )
+            ( { model | state = HasDaf dd }, Cmd.none )
 
 
 
@@ -87,7 +93,7 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    case model of
+    case model.state of
         AwaitingDaf ->
             div [ id "app" ] [ text "Loading today's daf..." ]
 
