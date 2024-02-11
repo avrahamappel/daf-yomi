@@ -1,4 +1,4 @@
-{ pkgs, stdenv }:
+{ pkgs ? import <nixpkgs> { }, stdenv ? pkgs.stdenv }:
 
 stdenv.mkDerivation {
   name = "kaios-simulator";
@@ -10,18 +10,17 @@ stdenv.mkDerivation {
   buildInputs = [ pkgs.autoPatchelfHook ];
 
   nativebuildInputs = with pkgs; [
-    libstdcxx5
-    libgcc
-    libgtk
-    libgdk
-    libfreetype
-    libfontconfig
-    lib
+    pkg-config
+    glib
   ];
 
-  buildPhase = ''
+  autoPatchelfIgnoreMissingDeps = [ "*" ];
+
+  installPhase = ''
+    runHook preInstall
     mkdir -p $out/bin $out/lib
     tar -xvf $src/kaiosrt-v2.5.en-US.linux-x86_64.tar.bz2 --directory $out/lib
-    ln -s $out/lib/kaiosrt/kaiosrt $out/bin/kaiosrt
+    install -m755 -D $out/lib/kaiosrt/kaiosrt $out/bin/kaiosrt
+    runHook postInstall
   '';
 }

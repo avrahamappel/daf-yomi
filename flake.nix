@@ -31,6 +31,8 @@
           npmDepsHash = "sha256-IiHYrFd47m4sp/HDamqjQorTY2iHDG5lQ6+r02Ay6y0=";
         };
 
+        simulator = pkgs.callPackage ./simulator.nix { };
+
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
       in
@@ -40,6 +42,7 @@
             palemoon
             usbutils
             gdeploy
+            simulator
             elm
             elm-language-server
             elm-format
