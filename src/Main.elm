@@ -1,9 +1,12 @@
 port module Main exposing (..)
 
 import Browser
+import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict)
 import Html exposing (Html, div, p, text)
 import Html.Attributes exposing (id)
+import Json.Decode as Decode
+import Platform.Sub exposing (batch)
 import Task
 import Time
 
@@ -41,7 +44,7 @@ main =
 
 
 type alias Model =
-    { cur_time : Time.Posix
+    { cur_time : Int
     , state : State
     , cache : Dict Int DafAndDate
     }
@@ -54,7 +57,7 @@ type State
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Time.millisToPosix 0) AwaitingDaf Dict.empty, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 AwaitingDaf Dict.empty, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -65,6 +68,13 @@ type Msg
     = None
     | AdjustTimestamp Time.Posix
     | SetDafAndDate DafAndDate
+    | DecrDate
+    | IncrDate
+
+
+dayInMillis : Int
+dayInMillis =
+    1000 * 60 * 60 * 24
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,10 +84,44 @@ update msg model =
             ( model, Cmd.none )
 
         AdjustTimestamp pos ->
-            ( { model | cur_time = pos }, getDafAndDate (Time.posixToMillis pos) )
+            let
+                cur_time =
+                    Time.posixToMillis pos
+            in
+            ( { model | cur_time = cur_time }, getDafAndDate cur_time )
 
         SetDafAndDate dd ->
-            ( { model | state = HasDaf dd, cache = Dict.insert (Time.posixToMillis model.cur_time) dd model.cache }, Cmd.none )
+            ( { model | state = HasDaf dd, cache = Dict.insert model.cur_time dd model.cache }, Cmd.none )
+
+        DecrDate ->
+            let
+                new_time =
+                    model.cur_time - dayInMillis
+
+                ( state, cmd ) =
+                    fetchFromCache new_time model.cache
+            in
+            ( { model | cur_time = new_time, state = state }, cmd )
+
+        IncrDate ->
+            let
+                new_time =
+                    model.cur_time + dayInMillis
+
+                ( state, cmd ) =
+                    fetchFromCache new_time model.cache
+            in
+            ( { model | cur_time = new_time, state = state }, cmd )
+
+
+fetchFromCache : Int -> Dict Int DafAndDate -> ( State, Cmd Msg )
+fetchFromCache time cache =
+    case Dict.get time cache of
+        Nothing ->
+            ( AwaitingDaf, getDafAndDate time )
+
+        Just data ->
+            ( HasDaf data, Cmd.none )
 
 
 
@@ -86,7 +130,27 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    returnDafAndDate SetDafAndDate
+    batch
+        [ returnDafAndDate SetDafAndDate
+        , onKeyDown keyDecoder
+        ]
+
+
+keyDecoder : Decode.Decoder Msg
+keyDecoder =
+    let
+        toMsg str =
+            case str of
+                "ArrowLeft" ->
+                    DecrDate
+
+                "ArrowRight" ->
+                    IncrDate
+
+                _ ->
+                    None
+    in
+    Decode.map toMsg (Decode.field "key" Decode.string)
 
 
 
