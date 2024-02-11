@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Browser
 import Html exposing (Html, div, p, text)
+import Html.Attributes exposing (id)
 import Task
 import Time
 
@@ -88,10 +89,10 @@ view : Model -> Html Msg
 view model =
     case model of
         AwaitingDaf ->
-            div [] [ text "Loading today's daf..." ]
+            div [ id "app" ] [ text "Loading today's daf..." ]
 
         HasDaf dd ->
-            div []
+            div [ id "app" ]
                 [ p [] [ text dd.date ]
                 , p [] [ text dd.hdate ]
                 , p [] [ text dd.dafYomi ]
