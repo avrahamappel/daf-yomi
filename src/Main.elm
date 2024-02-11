@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Browser
+import Dict exposing (Dict)
 import Html exposing (Html, div, p, text)
 import Html.Attributes exposing (id)
 import Task
@@ -42,6 +43,7 @@ main =
 type alias Model =
     { cur_time : Time.Posix
     , state : State
+    , cache : Dict Int DafAndDate
     }
 
 
@@ -52,7 +54,7 @@ type State
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Time.millisToPosix 0) AwaitingDaf, Task.perform AdjustTimestamp Time.now )
+    ( Model (Time.millisToPosix 0) AwaitingDaf Dict.empty, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -75,7 +77,7 @@ update msg model =
             ( { model | cur_time = pos }, getDafAndDate (Time.posixToMillis pos) )
 
         SetDafAndDate dd ->
-            ( { model | state = HasDaf dd }, Cmd.none )
+            ( { model | state = HasDaf dd, cache = Dict.insert (Time.posixToMillis model.cur_time) dd model.cache }, Cmd.none )
 
 
 
