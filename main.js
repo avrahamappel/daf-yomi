@@ -3,21 +3,21 @@ import { DafYomi } from '@hebcal/learning'
 import './style.css'
 import { Elm } from './src/Main.elm'
 
-const getDafAndDate = (timestamp) => {
-    const date = new Date(timestamp);
+const getData = (date) => {
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);
 
     return {
-        timestamp,
+        timestamp: date.getTime(),
         date: date.toDateString(),
-        hdate: hdate.toString(),
-        dafYomi: daf.render(),
+        hdate: hdate.render('he'),
+        dafYomi: daf.render('he'),
     };
 };
 
 const app = Elm.Main.init({ node: document.getElementById('app') });
 
-app.ports.getDafAndDate.subscribe(timestamp => {
-    app.ports.returnDafAndDate.send(getDafAndDate(timestamp));
+app.ports.getData.subscribe(timestamp => {
+    const date = new Date(timestamp ?? 0);
+    app.ports.returnData.send(getData(date));
 });

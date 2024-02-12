@@ -3,7 +3,7 @@ port module Main exposing (..)
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict)
-import Html exposing (Html, div, p, text)
+import Html exposing (Html, br, div, p, text)
 import Html.Attributes exposing (id)
 import Json.Decode as Decode
 import Platform.Sub exposing (batch)
@@ -11,18 +11,18 @@ import Task
 import Time
 
 
-type alias DafAndDate =
-    { date : String, hdate : String, dafYomi : String }
+type alias Data =
+    { timestamp : Int, date : String, hdate : String, dafYomi : String }
 
 
 
 -- PORTS
 
 
-port getDafAndDate : Int -> Cmd msg
+port getData : Int -> Cmd msg
 
 
-port returnDafAndDate : (DafAndDate -> msg) -> Sub msg
+port returnData : (Data -> msg) -> Sub msg
 
 
 
@@ -46,18 +46,18 @@ main =
 type alias Model =
     { cur_time : Int
     , state : State
-    , cache : Dict Int DafAndDate
+    , cache : Dict Int Data
     }
 
 
 type State
-    = AwaitingDaf
-    | HasDaf DafAndDate
+    = LoadingData
+    | HasData Data
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 AwaitingDaf Dict.empty, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 LoadingData Dict.empty, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -67,7 +67,7 @@ init _ =
 type Msg
     = None
     | AdjustTimestamp Time.Posix
-    | SetDafAndDate DafAndDate
+    | SetData Data
     | DecrDate
     | IncrDate
 
@@ -88,10 +88,15 @@ update msg model =
                 cur_time =
                     Time.posixToMillis pos
             in
-            ( { model | cur_time = cur_time }, getDafAndDate cur_time )
+            ( { model | cur_time = cur_time }, getData cur_time )
 
-        SetDafAndDate dd ->
-            ( { model | state = HasDaf dd, cache = Dict.insert model.cur_time dd model.cache }, Cmd.none )
+        SetData data ->
+            ( { model
+                | state = HasData data
+                , cache = Dict.insert data.timestamp data model.cache
+              }
+            , Cmd.none
+            )
 
         DecrDate ->
             let
@@ -114,14 +119,14 @@ update msg model =
             ( { model | cur_time = new_time, state = state }, cmd )
 
 
-fetchFromCache : Int -> Dict Int DafAndDate -> ( State, Cmd Msg )
+fetchFromCache : Int -> Dict Int Data -> ( State, Cmd Msg )
 fetchFromCache time cache =
     case Dict.get time cache of
         Nothing ->
-            ( AwaitingDaf, getDafAndDate time )
+            ( LoadingData, getData time )
 
         Just data ->
-            ( HasDaf data, Cmd.none )
+            ( HasData data, Cmd.none )
 
 
 
@@ -131,7 +136,7 @@ fetchFromCache time cache =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     batch
-        [ returnDafAndDate SetDafAndDate
+        [ returnData SetData
         , onKeyDown keyDecoder
         ]
 
@@ -159,13 +164,16 @@ keyDecoder =
 
 view : Model -> Html Msg
 view model =
-    case model.state of
-        AwaitingDaf ->
-            div [ id "app" ] [ text "Loading today's daf..." ]
+    let
+        vs =
+            case model.state of
+                LoadingData ->
+                    [ text "Loading..." ]
 
-        HasDaf dd ->
-            div [ id "app" ]
-                [ p [] [ text dd.date ]
-                , p [] [ text dd.hdate ]
-                , p [] [ text dd.dafYomi ]
-                ]
+                HasData data ->
+                    [ p [] [ text data.date ]
+                    , p [] [ text data.hdate ]
+                    , p [] [ text "Daf:", br [] [], text data.dafYomi ]
+                    ]
+    in
+    div [ id "app" ] vs
