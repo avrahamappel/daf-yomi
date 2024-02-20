@@ -10,7 +10,7 @@ const getData = (date) => {
     return {
         timestamp: date.getTime(),
         date: date.toDateString(),
-        hdate: hdate.render('he'),
+        hdate: hdate.renderGematriya(true),
         dafYomi: daf.render('he'),
     };
 };
