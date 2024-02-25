@@ -28,6 +28,8 @@
             elm-format
             elm2nix
             nodejs
+            # For serving built prod files
+            simple-http-server
           ];
         };
 
