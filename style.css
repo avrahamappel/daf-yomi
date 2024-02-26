@@ -57,25 +57,20 @@ h1 {
 }
 
 button {
-  background-color: unset;
-  border-color: unset;
-  color: unset;
+  border-color: rgba(255, 255, 255, 0.87);
+  border-radius: 0;
+  background-color: #242424;
+  color: rgba(255, 255, 255, 0.87);
   cursor: pointer;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
 .switchable-group {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: stretch;
-    text-align: center;
 }
 
 .switchable-decr {
-    width: 10vw;
     border: 1px solid;
     border-right: 0;
     border-top-left-radius: 1em;
@@ -83,7 +78,6 @@ button:focus-visible {
 }
 
 .switchable-incr {
-    width: 10vw;
     border: 1px solid;
     border-left: 0;
     border-top-right-radius: 1em;
@@ -95,17 +89,4 @@ button:focus-visible {
     border-right: 0;
     border-left: 0;
     padding: 0 1em;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }
