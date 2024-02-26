@@ -190,7 +190,7 @@ arrow to increment and decrement the value
 switchable : msg -> msg -> List (Html msg) -> Html msg
 switchable decrMsg incrMsg vs =
     div [ class "switchable-group" ]
-        [ button [ class "switchable-decr", onClick decrMsg ] [ text "⏴" ]
+        [ button [ class "switchable-decr", onClick decrMsg ] [ text "<" ]
         , div [ class "switchable-content" ] vs
-        , button [ class "switchable-incr", onClick incrMsg ] [ text "⏵" ]
+        , button [ class "switchable-incr", onClick incrMsg ] [ text ">" ]
         ]

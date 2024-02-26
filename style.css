@@ -64,12 +64,13 @@ button {
   /* font-weight: 500; */
   /* font-family: inherit; */
   /* background-color: #1a1a1a; */
+  background-color: canvas;
   cursor: pointer;
   /* transition: border-color 0.25s; */
 }
-button:hover {
-  border-color: #646cff;
-}
+/* button:hover { */
+/*   border-color: #646cff; */
+/* } */
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -84,7 +85,7 @@ button:focus-visible {
 
 .switchable-decr {
     width: 10vw;
-    border: 2px solid;
+    border: 1px solid;
     border-right: 0;
     border-top-left-radius: 1em;
     border-bottom-left-radius: 1em;
@@ -92,14 +93,14 @@ button:focus-visible {
 
 .switchable-incr {
     width: 10vw;
-    border: 2px solid;
+    border: 1px solid;
     border-left: 0;
     border-top-right-radius: 1em;
     border-bottom-right-radius: 1em;
 }
 
 .switchable-content {
-    border: 2px solid;
+    border: 1px solid;
     border-right: 0;
     border-left: 0;
     padding: 0 1em;
