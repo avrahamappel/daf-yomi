@@ -2,13 +2,20 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events exposing (onKeyDown)
-import Html exposing (Html, br, button, div, p, text)
+import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Platform.Sub as Sub
 import Task
 import Time
+
+
+
+-- type alias Shiur =
+--     { name :String
+--     , value : String
+--     }
 
 
 type alias Data =
@@ -153,13 +160,15 @@ view model =
                     [ text "Loading..." ]
 
                 HasData data ->
-                    [ switchable DecrDate
+                    [ switchable
+                        DecrDate
                         IncrDate
-                        [ text data.hdate
-                        , br [] []
-                        , text data.date
-                        ]
-                    , p [] [ text "Daf:", br [] [], text data.dafYomi ]
+                        [ text data.hdate, br [] [], text data.date ]
+                    , br [] []
+                    , switchable
+                        None
+                        None
+                        [ text "Daf:", br [] [], text data.dafYomi ]
                     ]
     in
     div [ id "app" ] vs
