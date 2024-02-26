@@ -2,7 +2,6 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events exposing (onKeyDown)
-import Dict exposing (Dict)
 import Html exposing (Html, br, button, div, p, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
@@ -47,7 +46,6 @@ main =
 type alias Model =
     { cur_time : Int
     , state : State
-    , cache : Dict Int Data
     }
 
 
@@ -58,7 +56,7 @@ type State
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 LoadingData Dict.empty, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 LoadingData, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -94,7 +92,6 @@ update msg model =
         SetData data ->
             ( { model
                 | state = HasData data
-                , cache = Dict.insert data.timestamp data model.cache
               }
             , Cmd.none
             )
@@ -103,31 +100,15 @@ update msg model =
             let
                 new_time =
                     model.cur_time - dayInMillis
-
-                ( state, cmd ) =
-                    fetchFromCache new_time model.cache
             in
-            ( { model | cur_time = new_time, state = state }, cmd )
+            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
 
         IncrDate ->
             let
                 new_time =
                     model.cur_time + dayInMillis
-
-                ( state, cmd ) =
-                    fetchFromCache new_time model.cache
             in
-            ( { model | cur_time = new_time, state = state }, cmd )
-
-
-fetchFromCache : Int -> Dict Int Data -> ( State, Cmd Msg )
-fetchFromCache time cache =
-    case Dict.get time cache of
-        Nothing ->
-            ( LoadingData, getData time )
-
-        Just data ->
-            ( HasData data, Cmd.none )
+            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
 
 
 
