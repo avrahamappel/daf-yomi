@@ -3,10 +3,11 @@ port module Main exposing (..)
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict)
-import Html exposing (Html, br, div, p, text)
-import Html.Attributes exposing (id)
+import Html exposing (Html, br, button, div, p, text)
+import Html.Attributes exposing (class, id)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode
-import Platform.Sub exposing (batch)
+import Platform.Sub as Sub
 import Task
 import Time
 
@@ -135,7 +136,7 @@ fetchFromCache time cache =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    batch
+    Sub.batch
         [ returnData SetData
         , onKeyDown keyDecoder
         ]
@@ -171,9 +172,25 @@ view model =
                     [ text "Loading..." ]
 
                 HasData data ->
-                    [ p [] [ text data.date ]
-                    , p [] [ text data.hdate ]
+                    [ switchable DecrDate
+                        IncrDate
+                        [ text data.hdate
+                        , br [] []
+                        , text data.date
+                        ]
                     , p [] [ text "Daf:", br [] [], text data.dafYomi ]
                     ]
     in
     div [ id "app" ] vs
+
+
+{-| An HTML group consisting of a middle field with a right and left pointing
+arrow to increment and decrement the value
+-}
+switchable : msg -> msg -> List (Html msg) -> Html msg
+switchable decrMsg incrMsg vs =
+    div [ class "switchable-group" ]
+        [ button [ class "switchable-decr", onClick decrMsg ] [ text "⏴" ]
+        , div [ class "switchable-content" ] vs
+        , button [ class "switchable-incr", onClick incrMsg ] [ text "⏵" ]
+        ]
