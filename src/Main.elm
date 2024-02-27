@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import Array exposing (Array)
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Html exposing (Html, br, button, div, text)
@@ -18,8 +19,16 @@ import Time
 --     }
 
 
+type alias Zeman =
+    { name : String, value : String }
+
+
 type alias Data =
-    { timestamp : Int, date : String, hdate : String, dafYomi : String }
+    { hdate : String
+    , dafYomi : String
+    , zemanim : List Zeman
+    , zemanimError : String
+    }
 
 
 
@@ -53,6 +62,7 @@ main =
 type alias Model =
     { cur_time : Int
     , state : State
+    , zemanim : ZemanimState
     }
 
 
@@ -61,9 +71,19 @@ type State
     | HasData Data
 
 
+type ZemanimState
+    = LoadingZemanim
+    | GeoError String
+    | HasZemanim
+        { zemanim : List Zeman
+        , initialShown : Int
+        , curShown : Zeman
+        }
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 LoadingData, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 LoadingData LoadingZemanim, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -154,6 +174,21 @@ keyDecoder =
 view : Model -> Html Msg
 view model =
     let
+        zemanim =
+            switchable
+                None
+                None
+                (case model.zemanim of
+                    LoadingZemanim ->
+                        [ text "Loading..." ]
+
+                    HasZemanim zm ->
+                        [ text zm.curShown.label, br [] [], zm.curShown.value ]
+
+                    GeoError e ->
+                        [ text "Error", br [] [], text e ]
+                )
+
         vs =
             case model.state of
                 LoadingData ->
@@ -163,12 +198,14 @@ view model =
                     [ switchable
                         DecrDate
                         IncrDate
-                        [ text data.hdate, br [] [], text data.date ]
+                        [ text data.hdate ]
                     , br [] []
                     , switchable
                         None
                         None
                         [ text "Daf:", br [] [], text data.dafYomi ]
+                    , br [] []
+                    , zemanim
                     ]
     in
     div [ id "app" ] vs
