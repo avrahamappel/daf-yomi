@@ -6,8 +6,8 @@ import { Elm } from './src/Main.elm'
 let gloc;
 let gerror = '';
 
-if ('geolocation' in location) {
-    location.geolocation.getCurrentPosition(
+if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
         position => {
             gloc = new GeoLocation(
                 null,
