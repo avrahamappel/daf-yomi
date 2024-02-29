@@ -20,7 +20,7 @@ import Time
 
 
 type alias Zeman =
-    { name : String, value : String }
+    { label : String, value : String }
 
 
 type alias Data =
@@ -183,7 +183,10 @@ view model =
                         [ text "Loading..." ]
 
                     HasZemanim zm ->
-                        [ text zm.curShown.label, br [] [], zm.curShown.value ]
+                        [ text zm.curShown.label
+                        , br [] []
+                        , text zm.curShown.value
+                        ]
 
                     GeoError e ->
                         [ text "Error", br [] [], text e ]
