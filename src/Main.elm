@@ -75,7 +75,7 @@ type ZemanimState
     = LoadingZemanim
     | GeoError String
     | HasZemanim
-        { zemanim : List Zeman
+        { zemanim : Array Zeman
         , initialShown : Int
         , curShown : Zeman
         }
@@ -119,6 +119,22 @@ update msg model =
         SetData data ->
             ( { model
                 | state = HasData data
+                , zemanim =
+                    if data.zemanimError /= "" then
+                        GeoError data.zemanimError
+
+                    else
+                        let
+                            zmnArray =
+                                Array.fromList data.zemanim
+                        in
+                        HasZemanim
+                            { zemanim = zmnArray
+                            , curShown =
+                                Array.get 0 zmnArray
+                                    |> Maybe.withDefault { label = "", value = "" }
+                            , initialShown = 0
+                            }
               }
             , Cmd.none
             )
