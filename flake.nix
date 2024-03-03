@@ -27,6 +27,7 @@
             elm-language-server
             elm-format
             nodejs
+            simple-http-server
           ];
         };
 
@@ -50,15 +51,6 @@
           githubPages = self.packages.${system}.default.overrideAttrs {
             npmBuildFlags = [ "--" "--base" "/daf-yomi" ];
           };
-        };
-
-        apps.default = {
-          type = "app";
-          program = "${pkgs.writeShellScript "legacy-serve" ''
-            ${pkgs.simple-http-server}/bin/simple-http-server \
-              --nocache -i \
-              ${self.packages.${system}.default}/dist
-          ''}";
         };
       }
     );
