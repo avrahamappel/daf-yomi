@@ -52,6 +52,7 @@ main =
 
 type alias Model =
     { curTime : Int
+    , initTime : Int
     , state : State
     }
 
@@ -63,7 +64,7 @@ type State
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 LoadingData, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 0 LoadingData, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -93,7 +94,7 @@ update msg model =
                 curTime =
                     Time.posixToMillis pos
             in
-            ( { model | curTime = curTime }, getData curTime )
+            ( { model | initTime = curTime, curTime = curTime }, getData curTime )
 
         SetData data ->
             ( { model
@@ -112,8 +113,9 @@ update msg model =
                         Decr ->
                             model.curTime - dayInMillis
 
-                        _ ->
-                            model.curTime
+                        Click ->
+                            -- Reset to initial
+                            model.initTime
             in
             ( { model | curTime = new_time, state = LoadingData }, getData new_time )
 
