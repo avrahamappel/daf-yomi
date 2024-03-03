@@ -74,8 +74,7 @@ type Msg
     = None
     | AdjustTimestamp Time.Posix
     | SetData Data
-    | DecrDate
-    | IncrDate
+    | UpdateDate SwitchMsg
 
 
 dayInMillis : Int
@@ -103,17 +102,18 @@ update msg model =
             , Cmd.none
             )
 
-        DecrDate ->
+        UpdateDate switchMsg ->
             let
                 new_time =
-                    model.cur_time - dayInMillis
-            in
-            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
+                    case switchMsg of
+                        Incr ->
+                            model.cur_time + dayInMillis
 
-        IncrDate ->
-            let
-                new_time =
-                    model.cur_time + dayInMillis
+                        Decr ->
+                            model.cur_time - dayInMillis
+
+                        _ ->
+                            model.cur_time
             in
             ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
 
@@ -136,10 +136,10 @@ keyDecoder =
         toMsg str =
             case str of
                 "ArrowLeft" ->
-                    DecrDate
+                    UpdateDate Decr
 
                 "ArrowRight" ->
-                    IncrDate
+                    UpdateDate Incr
 
                 _ ->
                     None
@@ -160,15 +160,9 @@ view model =
                     [ text "Loading..." ]
 
                 HasData data ->
-                    [ switchable
-                        DecrDate
-                        IncrDate
-                        [ text data.hdate, br [] [], text data.date ]
+                    [ switchable data.hdate data.date UpdateDate
                     , br [] []
-                    , switchable
-                        None
-                        None
-                        [ text "Daf:", br [] [], text data.dafYomi ]
+                    , switchable "Daf:" data.dafYomi (\_ -> None)
                     ]
     in
     div [ id "app" ] vs
@@ -177,10 +171,20 @@ view model =
 {-| An HTML group consisting of a middle field with a right and left pointing
 arrow to increment and decrement the value
 -}
-switchable : msg -> msg -> List (Html msg) -> Html msg
-switchable decrMsg incrMsg vs =
+switchable : String -> String -> (SwitchMsg -> msg) -> Html msg
+switchable line1 line2 msg =
     div [ class "switchable-group" ]
-        [ button [ class "switchable-decr", onClick decrMsg ] [ text "<" ]
-        , div [ class "switchable-content" ] vs
-        , button [ class "switchable-incr", onClick incrMsg ] [ text ">" ]
+        [ button [ class "switchable-decr", onClick (msg Decr) ] [ text "<" ]
+        , button [ class "switchable-content", onClick (msg Click) ]
+            [ text line1
+            , br [] []
+            , text line2
+            ]
+        , button [ class "switchable-incr", onClick (msg Incr) ] [ text ">" ]
         ]
+
+
+type SwitchMsg
+    = Incr
+    | Decr
+    | Click
