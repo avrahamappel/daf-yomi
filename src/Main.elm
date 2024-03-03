@@ -105,7 +105,7 @@ update msg model =
 
         UpdateDate switchMsg ->
             let
-                new_time =
+                newTime =
                     case switchMsg of
                         Incr ->
                             model.curTime + dayInMillis
@@ -117,7 +117,7 @@ update msg model =
                             -- Reset to initial
                             model.initTime
             in
-            ( { model | curTime = new_time, state = LoadingData }, getData new_time )
+            ( { model | curTime = newTime, state = LoadingData }, getData newTime )
 
 
 
@@ -132,6 +132,8 @@ subscriptions _ =
         ]
 
 
+{-| TODO get rid of this
+-}
 keyDecoder : Decode.Decoder Msg
 keyDecoder =
     let
