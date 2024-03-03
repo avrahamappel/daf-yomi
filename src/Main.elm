@@ -151,7 +151,9 @@ view model =
                 HasData data ->
                     [ switchable data.hdate data.date UpdateDate
                     , br [] []
-                    , switchable "Daf:" data.dafYomi (\_ -> None)
+                    , switchable "דף היומי" data.dafYomi (\_ -> None)
+                    , br [][]
+                    , switchable "זמנים" "Coming soon..." (\_ -> None)
                     ]
     in
     div [ id "app" ] vs
