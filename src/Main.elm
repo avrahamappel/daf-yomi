@@ -1,25 +1,13 @@
 port module Main exposing (..)
 
 import Browser
-import Browser.Events exposing (onKeyDown)
-import Html exposing (Html, br, button, div, text)
-import Html.Attributes exposing (class, id)
+import Html exposing (Html, br, button, div, span, text)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
-import Platform.Sub as Sub
+import Json.Encode
 import Task
 import Time
-
-
-
--- type alias Shiur =
---     { name :String
---     , value : String
---     }
-
-
-type alias Data =
-    { timestamp : Int, date : String, hdate : String, dafYomi : String }
 
 
 
@@ -29,7 +17,7 @@ type alias Data =
 port getData : Int -> Cmd msg
 
 
-port returnData : (Data -> msg) -> Sub msg
+port returnData : (Json.Encode.Value -> msg) -> Sub msg
 
 
 
@@ -59,7 +47,12 @@ type alias Model =
 
 type State
     = LoadingData
+    | Error String
     | HasData Data
+
+
+type alias Data =
+    { date : String, hdate : String, dafYomi : String }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -74,7 +67,7 @@ init _ =
 type Msg
     = None
     | AdjustTimestamp Time.Posix
-    | SetData Data
+    | SetData Json.Encode.Value
     | UpdateDate SwitchMsg
 
 
@@ -96,12 +89,23 @@ update msg model =
             in
             ( { model | initTime = curTime, curTime = curTime }, getData curTime )
 
-        SetData data ->
-            ( { model
-                | state = HasData data
-              }
-            , Cmd.none
-            )
+        SetData json ->
+            let
+                decoder =
+                    Decode.map3 Data
+                        (Decode.field "date" Decode.string)
+                        (Decode.field "hdate" Decode.string)
+                        (Decode.field "dafYomi" Decode.string)
+
+                state =
+                    case Decode.decodeValue decoder json of
+                        Ok data ->
+                            HasData data
+
+                        Err e ->
+                            Error (Decode.errorToString e)
+            in
+            ( { model | state = state }, Cmd.none )
 
         UpdateDate switchMsg ->
             let
@@ -126,29 +130,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ returnData SetData
-        , onKeyDown keyDecoder
-        ]
-
-
-{-| TODO get rid of this
--}
-keyDecoder : Decode.Decoder Msg
-keyDecoder =
-    let
-        toMsg str =
-            case str of
-                "ArrowLeft" ->
-                    UpdateDate Decr
-
-                "ArrowRight" ->
-                    UpdateDate Incr
-
-                _ ->
-                    None
-    in
-    Decode.map toMsg (Decode.field "key" Decode.string)
+    returnData SetData
 
 
 
@@ -162,6 +144,9 @@ view model =
             case model.state of
                 LoadingData ->
                     [ text "Loading..." ]
+
+                Error e ->
+                    [ span [ style "color" "red" ] [ text e ] ]
 
                 HasData data ->
                     [ switchable data.hdate data.date UpdateDate

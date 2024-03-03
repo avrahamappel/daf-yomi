@@ -8,7 +8,6 @@ const getData = (date) => {
     const daf = new DafYomi(hdate);
 
     return {
-        timestamp: date.getTime(),
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
         dafYomi: daf.render('he'),
