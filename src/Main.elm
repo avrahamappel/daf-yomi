@@ -51,7 +51,7 @@ main =
 
 
 type alias Model =
-    { cur_time : Int
+    { curTime : Int
     , state : State
     }
 
@@ -90,10 +90,10 @@ update msg model =
 
         AdjustTimestamp pos ->
             let
-                cur_time =
+                curTime =
                     Time.posixToMillis pos
             in
-            ( { model | cur_time = cur_time }, getData cur_time )
+            ( { model | curTime = curTime }, getData curTime )
 
         SetData data ->
             ( { model
@@ -107,15 +107,15 @@ update msg model =
                 new_time =
                     case switchMsg of
                         Incr ->
-                            model.cur_time + dayInMillis
+                            model.curTime + dayInMillis
 
                         Decr ->
-                            model.cur_time - dayInMillis
+                            model.curTime - dayInMillis
 
                         _ ->
-                            model.cur_time
+                            model.curTime
             in
-            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
+            ( { model | curTime = new_time, state = LoadingData }, getData new_time )
 
 
 
