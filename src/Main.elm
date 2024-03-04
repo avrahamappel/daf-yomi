@@ -28,6 +28,8 @@ type alias Data =
     , dafYomi : String
     , zemanim : List Zeman
     , zemanimError : String
+    , latitude : String
+    , longitude : String
     }
 
 
