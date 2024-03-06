@@ -39,13 +39,14 @@ const getData = async (date) => {
 
         return {
             zemanim,
-            zemanimError: '',
+            zemanimError: null,
             latitude: gloc.getLatitude().toFixed(2),
             longitude: gloc.getLongitude().toFixed(2)
         };
     }).catch(error => ({ zemanimError: error, zemanim: [] }));
 
     return {
+        date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
         // TODO day of week
         dafYomi: daf.render('he'),

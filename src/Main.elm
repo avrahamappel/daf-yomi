@@ -2,35 +2,13 @@ port module Main exposing (..)
 
 import Array exposing (Array)
 import Browser
-import Browser.Events exposing (onKeyDown)
-import Html exposing (Html, br, button, div, text)
-import Html.Attributes exposing (class, id)
+import Html exposing (Html, br, button, div, span, text)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
-import Json.Decode as Decode
-import Platform.Sub as Sub
+import Json.Decode as D exposing (Decoder)
+import Json.Encode
 import Task
 import Time
-
-
-
--- type alias Shiur =
---     { name :String
---     , value : String
---     }
-
-
-type alias Zeman =
-    { label : String, value : String }
-
-
-type alias Data =
-    { hdate : String
-    , dafYomi : String
-    , zemanim : List Zeman
-    , zemanimError : String
-    , latitude : String
-    , longitude : String
-    }
 
 
 
@@ -40,7 +18,7 @@ type alias Data =
 port getData : Int -> Cmd msg
 
 
-port returnData : (Data -> msg) -> Sub msg
+port returnData : (Json.Encode.Value -> msg) -> Sub msg
 
 
 
@@ -62,30 +40,88 @@ main =
 
 
 type alias Model =
-    { cur_time : Int
+    { curTime : Int
+    , initTime : Int
     , state : State
-    , zemanim : ZemanimState
     }
 
 
 type State
     = LoadingData
+    | Error String
     | HasData Data
 
 
+type alias Data =
+    { date : String
+    , hdate : String
+    , dafYomi : String
+    , zemanimState : ZemanimState
+    }
+
+
+dataDecoder : Decoder Data
+dataDecoder =
+    D.map4 Data
+        (D.field "date" D.string)
+        (D.field "hdate" D.string)
+        (D.field "dafYomi" D.string)
+        zemanimStateDecoder
+
+
 type ZemanimState
-    = LoadingZemanim
-    | GeoError String
-    | HasZemanim
-        { zemanim : Array Zeman
-        , initialShown : Int
-        , curShown : Zeman
-        }
+    = GeoError String
+    | HasZemanim Zemanim
+
+
+zemanimStateDecoder : Decoder ZemanimState
+zemanimStateDecoder =
+    D.oneOf
+        [ D.map GeoError (D.field "zemanimError" D.string)
+        , D.map HasZemanim zemanimDecoder
+        ]
+
+
+type alias Zemanim =
+    { zemanim : Array Zeman
+    , initialShown : Int
+    , curShown : Int
+    , latitude : String
+    , longitude : String
+    }
+
+
+zemanimDecoder : Decoder Zemanim
+zemanimDecoder =
+    D.map3 zemanim
+        (D.field "latitude" D.string)
+        (D.field "longitude" D.string)
+        (D.field "zemanim" (D.array zemanDecoder))
+
+
+zemanim : String -> String -> Array Zeman -> Zemanim
+zemanim lat long zmnm =
+    -- TODO set index based on cur time
+    -- let
+    --     nextZemanIndex = zemanim
+    -- in
+    Zemanim zmnm 0 0 lat long
+
+
+type alias Zeman =
+    { name : String, value : String }
+
+
+zemanDecoder : Decoder Zeman
+zemanDecoder =
+    D.map2 Zeman
+        (D.field "name" D.string)
+        (D.field "value" D.string)
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 LoadingData LoadingZemanim, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 0 LoadingData, Task.perform AdjustTimestamp Time.now )
 
 
 
@@ -95,9 +131,8 @@ init _ =
 type Msg
     = None
     | AdjustTimestamp Time.Posix
-    | SetData Data
-    | DecrDate
-    | IncrDate
+    | SetData Json.Encode.Value
+    | UpdateDate SwitchMsg
 
 
 dayInMillis : Int
@@ -113,47 +148,38 @@ update msg model =
 
         AdjustTimestamp pos ->
             let
-                cur_time =
+                curTime =
                     Time.posixToMillis pos
             in
-            ( { model | cur_time = cur_time }, getData cur_time )
+            ( { model | initTime = curTime, curTime = curTime }, getData curTime )
 
-        SetData data ->
-            ( { model
-                | state = HasData data
-                , zemanim =
-                    if data.zemanimError /= "" then
-                        GeoError data.zemanimError
-
-                    else
-                        let
-                            zmnArray =
-                                Array.fromList data.zemanim
-                        in
-                        HasZemanim
-                            { zemanim = zmnArray
-                            , curShown =
-                                Array.get 0 zmnArray
-                                    |> Maybe.withDefault { label = "", value = "" }
-                            , initialShown = 0
-                            }
-              }
-            , Cmd.none
-            )
-
-        DecrDate ->
+        SetData json ->
             let
-                new_time =
-                    model.cur_time - dayInMillis
-            in
-            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
+                state =
+                    case D.decodeValue dataDecoder json of
+                        Ok data ->
+                            HasData data
 
-        IncrDate ->
-            let
-                new_time =
-                    model.cur_time + dayInMillis
+                        Err e ->
+                            Error (D.errorToString e)
             in
-            ( { model | cur_time = new_time, state = LoadingData }, getData new_time )
+            ( { model | state = state }, Cmd.none )
+
+        UpdateDate switchMsg ->
+            let
+                newTime =
+                    case switchMsg of
+                        Incr ->
+                            model.curTime + dayInMillis
+
+                        Decr ->
+                            model.curTime - dayInMillis
+
+                        Click ->
+                            -- Reset to initial
+                            model.initTime
+            in
+            ( { model | curTime = newTime, state = LoadingData }, getData newTime )
 
 
 
@@ -162,27 +188,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ returnData SetData
-        , onKeyDown keyDecoder
-        ]
-
-
-keyDecoder : Decode.Decoder Msg
-keyDecoder =
-    let
-        toMsg str =
-            case str of
-                "ArrowLeft" ->
-                    DecrDate
-
-                "ArrowRight" ->
-                    IncrDate
-
-                _ ->
-                    None
-    in
-    Decode.map toMsg (Decode.field "key" Decode.string)
+    returnData SetData
 
 
 
@@ -192,41 +198,34 @@ keyDecoder =
 view : Model -> Html Msg
 view model =
     let
-        zemanim =
-            switchable
-                None
-                None
-                (case model.zemanim of
-                    LoadingZemanim ->
-                        [ text "Loading..." ]
-
-                    HasZemanim zm ->
-                        [ text zm.curShown.label
-                        , br [] []
-                        , text zm.curShown.value
-                        ]
-
-                    GeoError e ->
-                        [ text "Error", br [] [], text e ]
-                )
-
         vs =
             case model.state of
                 LoadingData ->
                     [ text "Loading..." ]
 
+                Error e ->
+                    [ span [ style "color" "red" ] [ text e ] ]
+
                 HasData data ->
-                    [ switchable
-                        DecrDate
-                        IncrDate
-                        [ text data.hdate ]
+                    let
+                        ( zemanimLine1, zemanimLine2 ) =
+                            case data.zemanimState of
+                                HasZemanim zmnm ->
+                                    case Array.get zmnm.curShown zmnm.zemanim of
+                                        Just zm ->
+                                            ( zm.name, zm.value )
+
+                                        Nothing ->
+                                            ( "Error", "No entry for index " ++ String.fromInt zmnm.curShown )
+
+                                GeoError e ->
+                                    ( "Error", e )
+                    in
+                    [ switchable data.hdate data.date UpdateDate
                     , br [] []
-                    , switchable
-                        None
-                        None
-                        [ text "Daf:", br [] [], text data.dafYomi ]
+                    , switchable "דף היומי" data.dafYomi (\_ -> None)
                     , br [] []
-                    , zemanim
+                    , switchable zemanimLine1 zemanimLine2 (\_ -> None)
                     ]
     in
     div [ id "app" ] vs
@@ -235,10 +234,20 @@ view model =
 {-| An HTML group consisting of a middle field with a right and left pointing
 arrow to increment and decrement the value
 -}
-switchable : msg -> msg -> List (Html msg) -> Html msg
-switchable decrMsg incrMsg vs =
+switchable : String -> String -> (SwitchMsg -> msg) -> Html msg
+switchable line1 line2 msg =
     div [ class "switchable-group" ]
-        [ button [ class "switchable-decr", onClick decrMsg ] [ text "<" ]
-        , div [ class "switchable-content" ] vs
-        , button [ class "switchable-incr", onClick incrMsg ] [ text ">" ]
+        [ button [ class "switchable-decr", onClick (msg Decr) ] [ text "<" ]
+        , button [ class "switchable-content", onClick (msg Click) ]
+            [ text line1
+            , br [] []
+            , text line2
+            ]
+        , button [ class "switchable-incr", onClick (msg Incr) ] [ text ">" ]
         ]
+
+
+type SwitchMsg
+    = Incr
+    | Decr
+    | Click
