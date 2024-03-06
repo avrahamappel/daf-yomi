@@ -31,10 +31,10 @@ const getData = async (date) => {
     let { zemanim, zemanimError, latitude, longitude } = await geoLocation().then((gloc) => {
         const zmn = new Zmanim(gloc, hdate);
         const zemanim = [
-            { label: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().toTimeString() },
-            { label: 'חצות היום', value: zmn.chatzot().toTimeString() },
-            { label: 'שקיעת החמה', value: zmn.shkiah().toTimeString() },
-            { label: 'צאת הכוכבים', value: zmn.sunsetOffset(72).toTimeString() },
+            { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().toTimeString() },
+            { name: 'חצות היום', value: zmn.chatzot().toTimeString() },
+            { name: 'שקיעת החמה', value: zmn.shkiah().toTimeString() },
+            { name: 'צאת הכוכבים', value: zmn.sunsetOffset(72).toTimeString() },
         ];
 
         return {
