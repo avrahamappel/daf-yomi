@@ -133,6 +133,7 @@ type Msg
     | AdjustTimestamp Time.Posix
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
+    | ChangeZeman SwitcherMsg
 
 
 dayInMillis : Int
@@ -181,6 +182,51 @@ update msg model =
             in
             ( { model | curTime = newTime, state = LoadingData }, getData newTime )
 
+        ChangeZeman switchMsg ->
+            let
+                newIndex zmnm =
+                    case switchMsg of
+                        Left ->
+                            (if zmnm.curShown == 0 then
+                                Array.length zmnm.zemanim
+
+                             else
+                                zmnm.curShown
+                            )
+                                - 1
+
+                        Right ->
+                            let
+                                index =
+                                    zmnm.curShown + 1
+                            in
+                            if index == Array.length zmnm.zemanim then
+                                0
+
+                            else
+                                index
+
+                        Middle ->
+                            zmnm.initialShown
+
+                newZemanimState state =
+                    case state of
+                        HasZemanim zmnm ->
+                            HasZemanim { zmnm | curShown = newIndex zmnm }
+
+                        _ ->
+                            state
+
+                newState =
+                    case model.state of
+                        HasData data ->
+                            HasData { data | zemanimState = newZemanimState data.zemanimState }
+
+                        _ ->
+                            model.state
+            in
+            ( { model | state = newState }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -225,7 +271,7 @@ view model =
                     , br [] []
                     , switcher "דף היומי" data.dafYomi (\_ -> None)
                     , br [] []
-                    , switcher zemanimLine1 zemanimLine2 (\_ -> None)
+                    , switcher zemanimLine1 zemanimLine2 ChangeZeman
                     ]
     in
     div [ id "app" ] vs
