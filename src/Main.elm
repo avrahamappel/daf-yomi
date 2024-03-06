@@ -132,7 +132,7 @@ type Msg
     = None
     | AdjustTimestamp Time.Posix
     | SetData Json.Encode.Value
-    | UpdateDate SwitchMsg
+    | ChangeDate SwitcherMsg
 
 
 dayInMillis : Int
@@ -165,17 +165,17 @@ update msg model =
             in
             ( { model | state = state }, Cmd.none )
 
-        UpdateDate switchMsg ->
+        ChangeDate switchMsg ->
             let
                 newTime =
                     case switchMsg of
-                        Incr ->
+                        Right ->
                             model.curTime + dayInMillis
 
-                        Decr ->
+                        Left ->
                             model.curTime - dayInMillis
 
-                        Click ->
+                        Middle ->
                             -- Reset to initial
                             model.initTime
             in
@@ -221,11 +221,11 @@ view model =
                                 GeoError e ->
                                     ( "Error", e )
                     in
-                    [ switchable data.hdate data.date UpdateDate
+                    [ switcher data.hdate data.date ChangeDate
                     , br [] []
-                    , switchable "דף היומי" data.dafYomi (\_ -> None)
+                    , switcher "דף היומי" data.dafYomi (\_ -> None)
                     , br [] []
-                    , switchable zemanimLine1 zemanimLine2 (\_ -> None)
+                    , switcher zemanimLine1 zemanimLine2 (\_ -> None)
                     ]
     in
     div [ id "app" ] vs
@@ -234,20 +234,20 @@ view model =
 {-| An HTML group consisting of a middle field with a right and left pointing
 arrow to increment and decrement the value
 -}
-switchable : String -> String -> (SwitchMsg -> msg) -> Html msg
-switchable line1 line2 msg =
-    div [ class "switchable-group" ]
-        [ button [ class "switchable-decr", onClick (msg Decr) ] [ text "<" ]
-        , button [ class "switchable-content", onClick (msg Click) ]
+switcher : String -> String -> (SwitcherMsg -> msg) -> Html msg
+switcher line1 line2 msg =
+    div [ class "switcher-group" ]
+        [ button [ class "switcher-left", onClick (msg Left) ] [ text "<" ]
+        , button [ class "switcher-middle", onClick (msg Middle) ]
             [ text line1
             , br [] []
             , text line2
             ]
-        , button [ class "switchable-incr", onClick (msg Incr) ] [ text ">" ]
+        , button [ class "switcher-right", onClick (msg Right) ] [ text ">" ]
         ]
 
 
-type SwitchMsg
-    = Incr
-    | Decr
-    | Click
+type SwitcherMsg
+    = Right
+    | Left
+    | Middle

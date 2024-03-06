@@ -65,27 +65,27 @@ button {
   cursor: pointer;
 }
 
-.switchable-group {
+.switcher-group {
     display: flex;
     justify-content: center;
     align-items: stretch;
 }
 
-.switchable-decr {
+.switcher-left {
     border: 1px solid;
     border-right: 0;
     border-top-left-radius: 1em;
     border-bottom-left-radius: 1em;
 }
 
-.switchable-incr {
+.switcher-right {
     border: 1px solid;
     border-left: 0;
     border-top-right-radius: 1em;
     border-bottom-right-radius: 1em;
 }
 
-.switchable-content {
+.switcher-middle {
     border: 1px solid;
     border-right: 0;
     border-left: 0;
