@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode
 import Task
-import Time
+import Time exposing (Posix, Zone)
 
 
 
@@ -42,6 +42,7 @@ main =
 type alias Model =
     { curTime : Int
     , initTime : Int
+    , tz : Zone
     , state : State
     }
 
@@ -113,19 +114,28 @@ zemanim lat long name zmnm =
 
 
 type alias Zeman =
-    { name : String, value : String }
+    { name : String, value : Posix }
 
 
 zemanDecoder : Decoder Zeman
 zemanDecoder =
-    D.map2 Zeman
+    let
+        zeman n v =
+            Time.millisToPosix v |> Zeman n
+    in
+    D.map2 zeman
         (D.field "name" D.string)
-        (D.field "value" D.string)
+        (D.field "value" D.int)
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 0 LoadingData, Task.perform AdjustTimestamp Time.now )
+    ( Model 0 0 Time.utc LoadingData
+    , Cmd.batch
+        [ Task.perform AdjustTimestamp Time.now
+        , Task.perform AdjustTimezone Time.here
+        ]
+    )
 
 
 
@@ -135,6 +145,7 @@ init _ =
 type Msg
     = None
     | AdjustTimestamp Time.Posix
+    | AdjustTimezone Zone
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
@@ -157,6 +168,9 @@ update msg model =
                     Time.posixToMillis pos
             in
             ( { model | initTime = curTime, curTime = curTime }, getData curTime )
+
+        AdjustTimezone tz ->
+            ( { model | tz = tz }, Cmd.none )
 
         SetData json ->
             let
@@ -263,7 +277,7 @@ view model =
                                 HasZemanim zmnm ->
                                     case Array.get zmnm.curShown zmnm.zemanim of
                                         Just zm ->
-                                            ( zm.name, zm.value )
+                                            ( zm.name, posixToTimeString model.tz zm.value )
 
                                         Nothing ->
                                             ( "Error", "No entry for index " ++ String.fromInt zmnm.curShown )
@@ -279,6 +293,55 @@ view model =
                     ]
     in
     div [ id "app" ] vs
+
+
+{-| Format a posix value to a time string
+-}
+posixToTimeString : Time.Zone -> Posix -> String
+posixToTimeString z p =
+    let
+        hour =
+            Time.toHour z p
+
+        minute =
+            (if Time.toMillis z p >= 500 then
+                1
+
+             else
+                0
+            )
+                + (if Time.toSecond z p >= 30 then
+                    1
+
+                   else
+                    0
+                  )
+                + Time.toMinute z p
+
+        pm =
+            hour - 12 >= 0
+
+        formattedTime =
+            String.fromInt
+                (if pm then
+                    hour - 12
+
+                 else if hour == 0 then
+                    12
+
+                 else
+                    hour
+                )
+                ++ ":"
+                ++ String.padLeft 2 '0' (String.fromInt minute)
+                ++ (if pm then
+                        " pm"
+
+                    else
+                        " am"
+                   )
+    in
+    formattedTime
 
 
 {-| An HTML group consisting of a middle field with a right and left pointing

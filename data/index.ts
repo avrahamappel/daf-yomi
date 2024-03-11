@@ -9,10 +9,10 @@ const getZemanim = (hdate: HDate, gloc: GeoLocation) => {
     try {
         const zmn = new Zmanim(gloc, hdate);
         const zemanim = [
-            { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().toTimeString() },
-            { name: 'חצות היום', value: zmn.chatzot().toTimeString() },
-            { name: 'שקיעת החמה', value: zmn.shkiah().toTimeString() },
-            { name: 'צאת הכוכבים', value: zmn.sunsetOffset(72).toTimeString() },
+            { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().getTime() },
+            { name: 'חצות היום', value: zmn.chatzot().getTime() },
+            { name: 'שקיעת החמה', value: zmn.shkiah().getTime() },
+            { name: 'צאת הכוכבים', value: zmn.sunsetOffset(72).getTime() },
         ];
 
         return {
