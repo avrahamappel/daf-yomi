@@ -61,13 +61,13 @@ type alias Data =
     }
 
 
-dataDecoder : Decoder Data
-dataDecoder =
+dataDecoder : Int -> Decoder Data
+dataDecoder curTime =
     D.map4 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
         (D.field "dafYomi" D.string)
-        zemanimStateDecoder
+        (zemanimStateDecoder curTime)
 
 
 type ZemanimState
@@ -75,12 +75,12 @@ type ZemanimState
     | HasZemanim Zemanim
 
 
-zemanimStateDecoder : Decoder ZemanimState
-zemanimStateDecoder =
+zemanimStateDecoder : Int -> Decoder ZemanimState
+zemanimStateDecoder curTime =
     D.field "zemanim"
         (D.oneOf
             [ D.map GeoError D.string
-            , D.map HasZemanim zemanimDecoder
+            , D.map HasZemanim (zemanimDecoder curTime)
             ]
         )
 
@@ -95,22 +95,31 @@ type alias Zemanim =
     }
 
 
-zemanimDecoder : Decoder Zemanim
-zemanimDecoder =
-    D.map4 zemanim
+zemanimDecoder : Int -> Decoder Zemanim
+zemanimDecoder curTime =
+    D.map4 (zemanim curTime)
         (D.field "latitude" D.string)
         (D.field "longitude" D.string)
         (D.field "name" (D.nullable D.string))
         (D.field "zemanim" (D.array zemanDecoder))
 
 
-zemanim : String -> String -> Maybe String -> Array Zeman -> Zemanim
-zemanim lat long name zmnm =
-    -- TODO set index based on cur time
-    -- let
-    --     nextZemanIndex = zemanim
-    -- in
-    Zemanim zmnm 0 0 lat long name
+zemanim : Int -> String -> String -> Maybe String -> Array Zeman -> Zemanim
+zemanim curTime lat long name zmnm =
+    let
+        nextZemanIndex =
+            zmnm
+                |> Array.indexedMap Tuple.pair
+                |> Array.filter
+                    (\( _, zn ) ->
+                        Time.posixToMillis zn.value >= curTime
+                    )
+                |> Array.map Tuple.first
+                |> Array.toList
+                |> List.head
+                |> Maybe.withDefault 0
+    in
+    Zemanim zmnm nextZemanIndex nextZemanIndex lat long name
 
 
 type alias Zeman =
@@ -175,7 +184,7 @@ update msg model =
         SetData json ->
             let
                 state =
-                    case D.decodeValue dataDecoder json of
+                    case D.decodeValue (dataDecoder model.curTime) json of
                         Ok data ->
                             HasData data
 
