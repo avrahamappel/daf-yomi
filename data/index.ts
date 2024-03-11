@@ -1,37 +1,12 @@
 import { HDate, Zmanim, GeoLocation } from '@hebcal/core'
 import { DafYomi } from '@hebcal/learning'
 
-const getLocation = async (): Promise<GeoLocation> => {
-    if (!('geolocation' in navigator)) {
-        throw new Error('GPS not supported');
-    }
-
-    return new Promise((res, rej) => {
-        navigator.geolocation.getCurrentPosition(
-            position => res(geoLocation(
-                position.coords.latitude,
-                position.coords.longitude,
-                position.coords.altitude || 0
-            )),
-            error => rej(error)
-        );
-    })
-};
-
-const geoLocation = (latitude: number, longitude: number, altitude?: number) =>
-    new GeoLocation(
-        null,
-        latitude,
-        longitude,
-        altitude || 0,
-        Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
+export * from './location';
 
 // TODO generate a calendar and use for getting parsha, yom tov etc.
 
-const getZemanim = async (hdate: HDate) => {
+const getZemanim = (hdate: HDate, gloc: GeoLocation) => {
     try {
-        const gloc = await getLocation();
         const zmn = new Zmanim(gloc, hdate);
         const zemanim = [
             { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().toTimeString() },
@@ -42,24 +17,21 @@ const getZemanim = async (hdate: HDate) => {
 
         return {
             zemanim,
-            zemanimError: null,
             latitude: gloc.getLatitude().toFixed(2),
-            longitude: gloc.getLongitude().toFixed(2)
+            longitude: gloc.getLongitude().toFixed(2),
+            name: gloc.getLocationName() || null,
         };
     } catch (error) {
-        return {
-            zemanimError: error.message ?? error,
-            zemanim: []
-        };
+        return error.message ?? error;
     }
 };
 
-export const getData = async (timestamp?: number) => {
-    const date = new Date(timestamp ?? 0);
+export const getData = (timestamp: number, gloc: GeoLocation) => {
+    const date = new Date(timestamp);
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);
 
-    let { zemanim, zemanimError, latitude, longitude } = await getZemanim(hdate);
+    let zemanim = getZemanim(hdate, gloc);
 
     return {
         date: date.toDateString(),
@@ -67,8 +39,5 @@ export const getData = async (timestamp?: number) => {
         // TODO day of week
         dafYomi: daf.render('he'),
         zemanim,
-        zemanimError,
-        latitude,
-        longitude
     };
 };

@@ -27,7 +27,6 @@
             elm-language-server
             elm-format
             nodejs
-            simple-http-server
           ];
         };
 

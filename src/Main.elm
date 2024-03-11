@@ -76,10 +76,12 @@ type ZemanimState
 
 zemanimStateDecoder : Decoder ZemanimState
 zemanimStateDecoder =
-    D.oneOf
-        [ D.map GeoError (D.field "zemanimError" D.string)
-        , D.map HasZemanim zemanimDecoder
-        ]
+    D.field "zemanim"
+        (D.oneOf
+            [ D.map GeoError D.string
+            , D.map HasZemanim zemanimDecoder
+            ]
+        )
 
 
 type alias Zemanim =
@@ -88,24 +90,26 @@ type alias Zemanim =
     , curShown : Int
     , latitude : String
     , longitude : String
+    , locationName : Maybe String
     }
 
 
 zemanimDecoder : Decoder Zemanim
 zemanimDecoder =
-    D.map3 zemanim
+    D.map4 zemanim
         (D.field "latitude" D.string)
         (D.field "longitude" D.string)
+        (D.field "name" (D.nullable D.string))
         (D.field "zemanim" (D.array zemanDecoder))
 
 
-zemanim : String -> String -> Array Zeman -> Zemanim
-zemanim lat long zmnm =
+zemanim : String -> String -> Maybe String -> Array Zeman -> Zemanim
+zemanim lat long name zmnm =
     -- TODO set index based on cur time
     -- let
     --     nextZemanIndex = zemanim
     -- in
-    Zemanim zmnm 0 0 lat long
+    Zemanim zmnm 0 0 lat long name
 
 
 type alias Zeman =
