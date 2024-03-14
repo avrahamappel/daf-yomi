@@ -8,6 +8,7 @@ type Position = {
     longitude: number,
     latitude: number,
     altitude?: number
+    timezone: string,
 };
 
 const STORAGE_KEY = 'app.location';
@@ -24,11 +25,12 @@ export const getLocation = (): Observable<GeoLocation> =>
         fetch("http://ip-api.com/json", { mode: 'cors' })
             .then((res) => res.json())
             .then((json) => {
-                const { lat, lon, city, region } = json;
+                const { lat, lon, city, region, timezone } = json;
                 const position = {
                     longitude: lon,
                     latitude: lat,
                     name: `${city}, ${region}`,
+                    timezone,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
                 ob.next(geoLocation(position));
@@ -42,11 +44,19 @@ export const getLocation = (): Observable<GeoLocation> =>
         // }
     });
 
-const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
+const geoLocation = ({
+    latitude,
+    longitude,
+    name,
+    altitude,
+    timezone
+}: Position) =>
     new GeoLocation(
-        name,
+        name ?? null,
         latitude,
         longitude,
         altitude || 0,
-        Intl.DateTimeFormat().resolvedOptions().timeZone
+        timezone
     );
+
+
