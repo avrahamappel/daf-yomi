@@ -48,5 +48,5 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         latitude,
         longitude,
         altitude || 0,
-        Intl.DateTimeFormat().resolvedOptions().timeZone
+        "-04:00"// TODO use real value
     );
