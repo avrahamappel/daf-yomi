@@ -1,5 +1,5 @@
 import { HDate } from '@hebcal/core'
-import { DafYomi } from '@hebcal/learning'
+import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import './style.css'
 import { Elm } from './src/Main.elm'
 
@@ -13,12 +13,18 @@ const getData = (date) => {
         name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
         value: (new DafYomi(hd)).render('he')
     }));
+    const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
+    const nachYomiShiur = {
+        name: 'נ"ך יומי',
+        value: nachYomi.render('he'),
+    };
 
     return {
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
         shiurim: [
             ...dafShiurim,
+            nachYomiShiur,
         ]
     };
 };
