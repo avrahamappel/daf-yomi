@@ -5,12 +5,21 @@ import { Elm } from './src/Main.elm'
 
 const getData = (date) => {
     const hdate = new HDate(date);
-    const daf = new DafYomi(hdate);
+    const dafShiurim = [
+        hdate,
+        hdate.subtract(1, 'year'),
+        hdate.subtract(2, 'years')
+    ].map((hd) => ({
+        name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
+        value: (new DafYomi(hd)).render('he')
+    }));
 
     return {
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
-        dafYomi: daf.render('he'),
+        shiurim: [
+            ...dafShiurim,
+        ]
     };
 };
 

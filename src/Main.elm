@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import Array exposing (Array)
 import Browser
 import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (class, id, style)
@@ -52,7 +53,18 @@ type State
 
 
 type alias Data =
-    { date : String, hdate : String, dafYomi : String }
+    { date : String, hdate : String, shiurim : Shiurim }
+
+
+type alias Shiurim =
+    { shiurim : Array Shiur
+    , initialShown : Int
+    , curShown : Int
+    }
+
+
+type alias Shiur =
+    { name : String, value : String }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -69,6 +81,7 @@ type Msg
     | AdjustTimestamp Time.Posix
     | SetData Json.Encode.Value
     | UpdateDate SwitchMsg
+    | ChangeShiur SwitchMsg
 
 
 dayInMillis : Int
@@ -95,7 +108,16 @@ update msg model =
                     Decode.map3 Data
                         (Decode.field "date" Decode.string)
                         (Decode.field "hdate" Decode.string)
-                        (Decode.field "dafYomi" Decode.string)
+                        (Decode.field "shiurim"
+                            (Decode.map (\arr -> Shiurim arr 0 0)
+                                (Decode.array
+                                    (Decode.map2 Shiur
+                                        (Decode.field "name" Decode.string)
+                                        (Decode.field "value" Decode.string)
+                                    )
+                                )
+                            )
+                        )
 
                 state =
                     case Decode.decodeValue decoder json of
@@ -123,6 +145,46 @@ update msg model =
             in
             ( { model | curTime = newTime, state = LoadingData }, getData newTime )
 
+        ChangeShiur switchMsg ->
+            let
+                newIndex shiurim =
+                    case switchMsg of
+                        Decr ->
+                            (if shiurim.curShown == 0 then
+                                Array.length shiurim.shiurim
+
+                             else
+                                shiurim.curShown
+                            )
+                                - 1
+
+                        Incr ->
+                            let
+                                index =
+                                    shiurim.curShown + 1
+                            in
+                            if index == Array.length shiurim.shiurim then
+                                0
+
+                            else
+                                index
+
+                        Click ->
+                            shiurim.initialShown
+
+                newShiurim shiurim =
+                    { shiurim | curShown = newIndex shiurim }
+
+                newState =
+                    case model.state of
+                        HasData data ->
+                            HasData { data | shiurim = newShiurim data.shiurim }
+
+                        _ ->
+                            model.state
+            in
+            ( { model | state = newState }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -149,10 +211,19 @@ view model =
                     [ span [ style "color" "red" ] [ text e ] ]
 
                 HasData data ->
+                    let
+                        ( shiurimLine1, shiurimLine2 ) =
+                            case Array.get data.shiurim.curShown data.shiurim.shiurim of
+                                Just shiur ->
+                                    ( shiur.name, shiur.value )
+
+                                Nothing ->
+                                    ( "Error", "No entry for index " ++ String.fromInt data.shiurim.curShown )
+                    in
                     [ switchable data.hdate data.date UpdateDate
                     , br [] []
-                    , switchable "דף היומי" data.dafYomi (\_ -> None)
-                    , br [][]
+                    , switchable shiurimLine1 shiurimLine2 ChangeShiur
+                    , br [] []
                     , switchable "זמנים" "Coming soon..." (\_ -> None)
                     ]
     in
