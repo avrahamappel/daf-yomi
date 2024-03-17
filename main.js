@@ -5,16 +5,17 @@ import { Observable, combineLatest } from 'rxjs';
 
 const app = Elm.Main.init({ node: document.getElementById('app') });
 
-const geoLocation$ = getLocation();
+const position$ = getLocation();
 const getDataPort$ = new Observable((ob) => {
-    app.ports.getData.subscribe(timestamp => {
-        ob.next(timestamp);
+    // TODO this is now an object
+    app.ports.getData.subscribe(args => {
+        ob.next(args);
     });
 });
 
 // Update when either app fires or location changes
-combineLatest([getDataPort$, geoLocation$])
-    .subscribe(([timestamp, gloc]) => {
-        const data = getData(timestamp, gloc);
+combineLatest([getDataPort$, position$])
+    .subscribe(([dataArgs, pos]) => {
+        const data = getData(dataArgs, pos);
         app.ports.returnData.send(data);
     })

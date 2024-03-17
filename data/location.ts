@@ -1,9 +1,8 @@
-import { GeoLocation } from "@hebcal/core";
 import { Observable } from "rxjs";
 
 // TODO move this entire thing into Elm except the native browser part
 
-type Position = {
+export type Position = {
     name?: string,
     longitude: number,
     latitude: number,
@@ -12,12 +11,12 @@ type Position = {
 
 const STORAGE_KEY = 'app.location';
 
-export const getLocation = (): Observable<GeoLocation> =>
+export const getLocation = (): Observable<Position> =>
     new Observable((ob) => {
         // Try local storage
         const cached = localStorage.getItem(STORAGE_KEY);
         if (cached) {
-            ob.next(geoLocation(JSON.parse(cached)));
+            ob.next(JSON.parse(cached));
         }
 
         // Try ip location
@@ -31,7 +30,7 @@ export const getLocation = (): Observable<GeoLocation> =>
                     name: `${city}, ${region}`,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
-                ob.next(geoLocation(position));
+                ob.next(position);
             });
 
         // Try geolocation (currently not working on KaiOS)
@@ -41,12 +40,3 @@ export const getLocation = (): Observable<GeoLocation> =>
         //     );
         // }
     });
-
-const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
-    new GeoLocation(
-        name,
-        latitude,
-        longitude,
-        altitude || 0,
-        "-04:00"// TODO use real value
-    );

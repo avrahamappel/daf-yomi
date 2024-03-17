@@ -8,14 +8,14 @@ import Html.Events exposing (onClick)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode
 import Task
-import Time exposing (Posix, Zone)
+import Time exposing (Posix, Zone, ZoneName(..))
 
 
 
 -- PORTS
 
 
-port getData : Int -> Cmd msg
+port getData : Json.Encode.Value -> Cmd msg
 
 
 port returnData : (Json.Encode.Value -> msg) -> Sub msg
@@ -42,8 +42,14 @@ main =
 type alias Model =
     { curTime : Int
     , initTime : Int
-    , tz : Zone
+    , location : Location
     , state : State
+    }
+
+
+type alias Location =
+    { timezone : Zone
+    , zoneName : ZoneName
     }
 
 
@@ -139,11 +145,9 @@ zemanDecoder =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 0 Time.utc LoadingData
-    , Cmd.batch
-        [ Task.perform AdjustTimestamp Time.now
-        , Task.perform AdjustTimezone Time.here
-        ]
+    ( Model 0 0 (Location Time.utc (Offset 0)) LoadingData
+    , Task.map3 AdjustLocationAndTime Time.getZoneName Time.here Time.now
+        |> Task.perform (\x -> x)
     )
 
 
@@ -153,8 +157,7 @@ init _ =
 
 type Msg
     = None
-    | AdjustTimestamp Time.Posix
-    | AdjustTimezone Zone
+    | AdjustLocationAndTime ZoneName Zone Posix
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
@@ -165,21 +168,63 @@ dayInMillis =
     1000 * 60 * 60 * 24
 
 
+getDataCmd : ZoneName -> Int -> Cmd Msg
+getDataCmd zn ts =
+    let
+        -- In the case of an offset type, turn something like this:
+        -- `-240`
+        -- into something like this:
+        -- `"-4:00"`
+        formatZoneName =
+            case zn of
+                Name name ->
+                    name
+
+                Offset offset ->
+                    let
+                        absOff =
+                            abs offset
+
+                        sign =
+                            if offset < 0 then
+                                "-"
+
+                            else
+                                "+"
+
+                        hrs =
+                            absOff // 60 |> String.fromInt
+
+                        mins =
+                            modBy absOff 60 |> String.fromInt
+                    in
+                    sign ++ hrs ++ ":" ++ mins
+
+        json zs =
+            Json.Encode.object
+                [ ( "timezone", Json.Encode.string zs )
+                , ( "timestamp", Json.Encode.int ts )
+                ]
+    in
+    formatZoneName
+        |> json
+        |> getData
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         None ->
             ( model, Cmd.none )
 
-        AdjustTimestamp pos ->
+        AdjustLocationAndTime zn tz pos ->
             let
                 curTime =
                     Time.posixToMillis pos
             in
-            ( { model | initTime = curTime, curTime = curTime }, getData curTime )
-
-        AdjustTimezone tz ->
-            ( { model | tz = tz }, Cmd.none )
+            ( { model | initTime = curTime, curTime = curTime, location = Location tz zn }
+            , getDataCmd zn curTime
+            )
 
         SetData json ->
             let
@@ -207,7 +252,9 @@ update msg model =
                             -- Reset to initial
                             model.initTime
             in
-            ( { model | curTime = newTime, state = LoadingData }, getData newTime )
+            ( { model | curTime = newTime, state = LoadingData }
+            , getDataCmd model.location.zoneName newTime
+            )
 
         ChangeZeman switchMsg ->
             let
@@ -286,7 +333,7 @@ view model =
                                 HasZemanim zmnm ->
                                     case Array.get zmnm.curShown zmnm.zemanim of
                                         Just zm ->
-                                            ( zm.name, posixToTimeString model.tz zm.value )
+                                            ( zm.name, posixToTimeString model.location.timezone zm.value )
 
                                         Nothing ->
                                             ( "Error", "No entry for index " ++ String.fromInt zmnm.curShown )
