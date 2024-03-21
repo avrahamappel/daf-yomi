@@ -20,14 +20,14 @@ export const getLocation = (): Observable<Position> =>
         }
 
         // Try ip location
-        fetch("http://ip-api.com/json", { mode: 'cors' })
+        fetch("https://api.ipapi.is", { mode: 'cors' })
             .then((res) => res.json())
             .then((json) => {
-                const { lat, lon, city, region } = json;
+                const { latitude, longitude, city, state } = json.location;
                 const position = {
-                    longitude: lon,
-                    latitude: lat,
-                    name: `${city}, ${region}`,
+                    longitude,
+                    latitude,
+                    name: `${city}, ${state}`,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
                 ob.next(position);
