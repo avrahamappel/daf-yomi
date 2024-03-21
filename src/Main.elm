@@ -58,16 +58,18 @@ type alias Data =
     , hdate : String
     , dafYomi : String
     , zemanimState : ZemanimState
+    , shiurim : Shiurim
     }
 
 
 dataDecoder : Int -> Decoder Data
 dataDecoder curTime =
-    D.map4 Data
+    D.map5 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
         (D.field "dafYomi" D.string)
-        (zemanimStateDecoder curTime)
+        (D.field "zemanim" (zemanimStateDecoder curTime))
+        (D.field "shiurim" shiurimDecoder)
 
 
 type ZemanimState
@@ -77,12 +79,10 @@ type ZemanimState
 
 zemanimStateDecoder : Int -> Decoder ZemanimState
 zemanimStateDecoder curTime =
-    D.field "zemanim"
-        (D.oneOf
-            [ D.map GeoError D.string
-            , D.map HasZemanim (zemanimDecoder curTime)
-            ]
-        )
+    D.oneOf
+        [ D.map GeoError D.string
+        , D.map HasZemanim (zemanimDecoder curTime)
+        ]
 
 
 type alias Zemanim =
@@ -137,6 +137,28 @@ zemanDecoder =
         (D.field "value" D.int)
 
 
+type alias Shiurim =
+    { shiurim : Array Shiur
+    , initialShown : Int
+    , curShown : Int
+    }
+
+
+shiurimDecoder : Decoder Shiurim
+shiurimDecoder =
+    D.map (\arr -> Shiurim arr 0 0)
+        (D.array
+            (D.map2 Shiur
+                (D.field "name" D.string)
+                (D.field "value" D.string)
+            )
+        )
+
+
+type alias Shiur =
+    { name : String, value : String }
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model 0 0 Time.utc LoadingData
@@ -154,6 +176,7 @@ type Msg
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
+    | ChangeShiur SwitcherMsg
 
 
 dayInMillis : Int
@@ -251,6 +274,46 @@ update msg model =
             in
             ( { model | state = newState }, Cmd.none )
 
+        ChangeShiur switchMsg ->
+            let
+                newIndex shiurim =
+                    case switchMsg of
+                        Left ->
+                            (if shiurim.curShown == 0 then
+                                Array.length shiurim.shiurim
+
+                             else
+                                shiurim.curShown
+                            )
+                                - 1
+
+                        Right ->
+                            let
+                                index =
+                                    shiurim.curShown + 1
+                            in
+                            if index == Array.length shiurim.shiurim then
+                                0
+
+                            else
+                                index
+
+                        Middle ->
+                            shiurim.initialShown
+
+                newShiurim shiurim =
+                    { shiurim | curShown = newIndex shiurim }
+
+                newState =
+                    case model.state of
+                        HasData data ->
+                            HasData { data | shiurim = newShiurim data.shiurim }
+
+                        _ ->
+                            model.state
+            in
+            ( { model | state = newState }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -290,10 +353,18 @@ view model =
 
                                 GeoError e ->
                                     ( "Error", e )
+
+                        ( shiurimLine1, shiurimLine2 ) =
+                            case Array.get data.shiurim.curShown data.shiurim.shiurim of
+                                Just shiur ->
+                                    ( shiur.name, shiur.value )
+
+                                Nothing ->
+                                    ( "Error", "No entry for index " ++ String.fromInt data.shiurim.curShown )
                     in
                     [ switcher data.hdate data.date ChangeDate
                     , br [] []
-                    , switcher "דף היומי" data.dafYomi (\_ -> None)
+                    , switcher shiurimLine1 shiurimLine2 ChangeShiur
                     , br [] []
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
                     ]

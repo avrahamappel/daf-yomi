@@ -1,5 +1,5 @@
 import { HDate, Zmanim, GeoLocation } from '@hebcal/core'
-import { DafYomi } from '@hebcal/learning'
+import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
 export * from './location';
@@ -64,12 +64,38 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     }
 };
 
+
+/**
+ * Get the shiurim for the given date
+ */
+const getShiurim = (hdate: HDate) => {
+    const dafShiurim = [
+        hdate,
+        hdate.subtract(1, 'year'),
+        hdate.subtract(2, 'years')
+    ].map((hd) => ({
+        name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
+        value: (new DafYomi(hd)).render('he')
+    }));
+    const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
+    const nachYomiShiur = {
+        name: 'נ"ך יומי',
+        value: nachYomi.render('he'),
+    };
+
+    return  [
+            ...dafShiurim,
+            nachYomiShiur,
+        ]
+};
+
 export const getData = (timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);
 
     let zemanim = getZemanim(hdate, pos);
+    let shiurim = getShiurim(hdate);
 
     return {
         date: date.toDateString(),
@@ -77,5 +103,6 @@ export const getData = (timestamp: number, pos: Position) => {
         // TODO day of week
         dafYomi: daf.render('he'),
         zemanim,
+        shiurim
     };
 };
