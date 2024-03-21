@@ -7,15 +7,14 @@ const app = Elm.Main.init({ node: document.getElementById('app') });
 
 const position$ = getLocation();
 const getDataPort$ = new Observable((ob) => {
-    // TODO this is now an object
-    app.ports.getData.subscribe(args => {
-        ob.next(args);
+    app.ports.getData.subscribe(timestamp => {
+        ob.next(timestamp);
     });
 });
 
 // Update when either app fires or location changes
 combineLatest([getDataPort$, position$])
-    .subscribe(([dataArgs, pos]) => {
-        const data = getData(dataArgs, pos);
+    .subscribe(([timestamp, pos]) => {
+        const data = getData(timestamp, pos);
         app.ports.returnData.send(data);
     })

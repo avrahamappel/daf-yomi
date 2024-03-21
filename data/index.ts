@@ -4,8 +4,6 @@ import { Position } from './location';
 
 export * from './location';
 
-type DataArgs = { timezone: string, timestamp: number };
-
 /**
  * Get timezone as a string.
  * Should be compatible across various browsers that don't necessarily support the full Intl API
@@ -66,7 +64,7 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     }
 };
 
-export const getData = ({ timestamp }: DataArgs, pos: Position) => {
+export const getData = (timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);

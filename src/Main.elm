@@ -15,7 +15,7 @@ import Time exposing (Posix, Zone, ZoneName(..))
 -- PORTS
 
 
-port getData : Json.Encode.Value -> Cmd msg
+port getData : Int -> Cmd msg
 
 
 port returnData : (Json.Encode.Value -> msg) -> Sub msg
@@ -42,14 +42,8 @@ main =
 type alias Model =
     { curTime : Int
     , initTime : Int
-    , location : Location
+    , timezone : Zone
     , state : State
-    }
-
-
-type alias Location =
-    { timezone : Zone
-    , zoneName : ZoneName
     }
 
 
@@ -145,9 +139,8 @@ zemanDecoder =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 0 (Location Time.utc (Offset 0)) LoadingData
-    , Task.map3 AdjustLocationAndTime Time.getZoneName Time.here Time.now
-        |> Task.perform (\x -> x)
+    ( Model 0 0 Time.utc LoadingData
+    , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
     )
 
 
@@ -157,7 +150,7 @@ init _ =
 
 type Msg
     = None
-    | AdjustLocationAndTime ZoneName Zone Posix
+    | AdjustTime Zone Posix
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
@@ -168,62 +161,19 @@ dayInMillis =
     1000 * 60 * 60 * 24
 
 
-getDataCmd : ZoneName -> Int -> Cmd Msg
-getDataCmd zn ts =
-    let
-        -- In the case of an offset type, turn something like this:
-        -- `-240`
-        -- into something like this:
-        -- `"-4:00"`
-        formatZoneName =
-            case zn of
-                Name name ->
-                    name
-
-                Offset offset ->
-                    let
-                        absOff =
-                            abs offset
-
-                        sign =
-                            if offset < 0 then
-                                "-"
-
-                            else
-                                "+"
-
-                        hrs =
-                            absOff // 60 |> String.fromInt
-
-                        mins =
-                            modBy absOff 60 |> String.fromInt
-                    in
-                    sign ++ hrs ++ ":" ++ mins
-
-        json zs =
-            Json.Encode.object
-                [ ( "timezone", Json.Encode.string zs )
-                , ( "timestamp", Json.Encode.int ts )
-                ]
-    in
-    formatZoneName
-        |> json
-        |> getData
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         None ->
             ( model, Cmd.none )
 
-        AdjustLocationAndTime zn tz pos ->
+        AdjustTime tz pos ->
             let
                 curTime =
                     Time.posixToMillis pos
             in
-            ( { model | initTime = curTime, curTime = curTime, location = Location tz zn }
-            , getDataCmd zn curTime
+            ( { model | initTime = curTime, curTime = curTime, timezone = tz }
+            , getData curTime
             )
 
         SetData json ->
@@ -253,7 +203,7 @@ update msg model =
                             model.initTime
             in
             ( { model | curTime = newTime, state = LoadingData }
-            , getDataCmd model.location.zoneName newTime
+            , getData newTime
             )
 
         ChangeZeman switchMsg ->
@@ -333,7 +283,7 @@ view model =
                                 HasZemanim zmnm ->
                                     case Array.get zmnm.curShown zmnm.zemanim of
                                         Just zm ->
-                                            ( zm.name, posixToTimeString model.location.timezone zm.value )
+                                            ( zm.name, posixToTimeString model.timezone zm.value )
 
                                         Nothing ->
                                             ( "Error", "No entry for index " ++ String.fromInt zmnm.curShown )
