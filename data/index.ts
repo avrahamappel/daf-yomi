@@ -6,20 +6,47 @@ export * from './location';
 
 type DataArgs = { timezone: string, timestamp: number };
 
-const geoLocation = ({ latitude, longitude, name, altitude }: Position, timezone: string) =>
+/**
+ * Get timezone as a string.
+ * Should be compatible across various browsers that don't necessarily support the full Intl API
+ */
+const getTimezone = (): string => {
+    let timezone: string | undefined;
+
+    try {
+        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (_) { }
+
+    if (timezone === undefined) {
+        let offset = (new Date()).getTimezoneOffset();
+
+        let hours = Math.floor(Math.abs(offset) / 60);
+        let minutes = Math.abs(offset) % 60;
+        let sign = offset > 0 ? '+' : offset < 0 ? '-' : '';
+
+        timezone = `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+
+    return timezone;
+};
+
+/**
+ * Build an instance of hebcal's GeoLocation
+ */
+const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
     new GeoLocation(
         name || null,
         latitude,
         longitude,
         altitude || 0,
-        timezone
+        getTimezone()
     );
 
 // TODO generate a calendar and use for getting parsha, yom tov etc.
 
-const getZemanim = (hdate: HDate, pos: Position, timezone: string) => {
+const getZemanim = (hdate: HDate, pos: Position) => {
     try {
-        const gloc = geoLocation(pos, timezone);
+        const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
         const zemanim = [
             { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().getTime() },
@@ -39,12 +66,12 @@ const getZemanim = (hdate: HDate, pos: Position, timezone: string) => {
     }
 };
 
-export const getData = ({ timestamp, timezone }: DataArgs, pos: Position) => {
+export const getData = ({ timestamp }: DataArgs, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);
 
-    let zemanim = getZemanim(hdate, pos, timezone);
+    let zemanim = getZemanim(hdate, pos);
 
     return {
         date: date.toDateString(),
