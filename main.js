@@ -1,6 +1,7 @@
 import './style.css'
 import { Elm } from './src/Main.elm'
-import { getData, getLocation } from './data'
+import { getData } from './src/data'
+import { getLocation } from './src/location'
 import { Observable, combineLatest } from 'rxjs';
 
 const app = Elm.Main.init({ node: document.getElementById('app') });

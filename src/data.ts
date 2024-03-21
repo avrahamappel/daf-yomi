@@ -2,8 +2,6 @@ import { HDate, Zmanim, GeoLocation } from '@hebcal/core'
 import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
-export * from './location';
-
 /**
  * Get timezone as a string.
  * Should be compatible across various browsers that don't necessarily support the full Intl API
