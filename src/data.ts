@@ -45,10 +45,15 @@ const getZemanim = (hdate: HDate, pos: Position) => {
         const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
         const zemanim = [
-            { name: 'ס"ז ק"ש מ"א', value: zmn.sofZmanShmaMGA().getTime() },
+            { name: 'עלות השחר', value: zmn.sunriseOffset(-72).getTime() },
+            { name: 'הנץ החמה', value: zmn.neitzHaChama().getTime() },
+            { name: 'ס"ז קריאת שמע', value: zmn.sofZmanShmaMGA().getTime() },
+            { name: 'ס"ז תפילה', value: zmn.sofZmanTfilla().getTime() },
             { name: 'חצות היום', value: zmn.chatzot().getTime() },
+            { name: 'מנחה קטנה', value: zmn.minchaKetana().getTime() },
             { name: 'שקיעת החמה', value: zmn.shkiah().getTime() },
             { name: 'צאת הכוכבים', value: zmn.sunsetOffset(72).getTime() },
+            { name: 'חצות הלילה', value: zmn.chatzotNight().getTime() },
         ];
 
         return {
