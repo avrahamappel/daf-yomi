@@ -41,6 +41,8 @@ main =
 
 type alias Model =
     { curTime : Int
+    , curShiurIndex : Int
+    , curZemanIndex : Int
     , initTime : Int
     , timezone : Zone
     , state : State
@@ -62,13 +64,13 @@ type alias Data =
     }
 
 
-dataDecoder : Int -> Decoder Data
-dataDecoder curTime =
+dataDecoder : Decoder Data
+dataDecoder =
     D.map5 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
         (D.field "dafYomi" D.string)
-        (D.field "zemanim" (zemanimStateDecoder curTime))
+        (D.field "zemanim" zemanimStateDecoder)
         (D.field "shiurim" shiurimDecoder)
 
 
@@ -77,49 +79,34 @@ type ZemanimState
     | HasZemanim Zemanim
 
 
-zemanimStateDecoder : Int -> Decoder ZemanimState
-zemanimStateDecoder curTime =
+zemanimStateDecoder : Decoder ZemanimState
+zemanimStateDecoder =
     D.oneOf
         [ D.map GeoError D.string
-        , D.map HasZemanim (zemanimDecoder curTime)
+        , D.map HasZemanim zemanimDecoder
         ]
 
 
 type alias Zemanim =
     { zemanim : Array Zeman
-    , initialShown : Int
-    , curShown : Int
     , latitude : String
     , longitude : String
     , locationName : Maybe String
     }
 
 
-zemanimDecoder : Int -> Decoder Zemanim
-zemanimDecoder curTime =
-    D.map4 (zemanim curTime)
+zemanimDecoder : Decoder Zemanim
+zemanimDecoder =
+    D.map4 zemanim
         (D.field "latitude" D.string)
         (D.field "longitude" D.string)
         (D.field "name" (D.nullable D.string))
         (D.field "zemanim" (D.array zemanDecoder))
 
 
-zemanim : Int -> String -> String -> Maybe String -> Array Zeman -> Zemanim
-zemanim curTime lat long name zmnm =
-    let
-        nextZemanIndex =
-            zmnm
-                |> Array.indexedMap Tuple.pair
-                |> Array.filter
-                    (\( _, zn ) ->
-                        Time.posixToMillis zn.value >= curTime
-                    )
-                |> Array.map Tuple.first
-                |> Array.toList
-                |> List.head
-                |> Maybe.withDefault 0
-    in
-    Zemanim zmnm nextZemanIndex nextZemanIndex lat long name
+zemanim : String -> String -> Maybe String -> Array Zeman -> Zemanim
+zemanim lat long name zmnm =
+    Zemanim zmnm lat long name
 
 
 type alias Zeman =
@@ -138,20 +125,15 @@ zemanDecoder =
 
 
 type alias Shiurim =
-    { shiurim : Array Shiur
-    , initialShown : Int
-    , curShown : Int
-    }
+    Array Shiur
 
 
 shiurimDecoder : Decoder Shiurim
 shiurimDecoder =
-    D.map (\arr -> Shiurim arr 0 0)
-        (D.array
-            (D.map2 Shiur
-                (D.field "name" D.string)
-                (D.field "value" D.string)
-            )
+    D.array
+        (D.map2 Shiur
+            (D.field "name" D.string)
+            (D.field "value" D.string)
         )
 
 
@@ -161,7 +143,7 @@ type alias Shiur =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model 0 0 Time.utc LoadingData
+    ( Model 0 0 0 0 Time.utc LoadingData
     , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
     )
 
@@ -202,14 +184,42 @@ update msg model =
         SetData json ->
             let
                 state =
-                    case D.decodeValue (dataDecoder model.curTime) json of
+                    case D.decodeValue dataDecoder json of
                         Ok data ->
                             HasData data
 
                         Err e ->
                             Error (D.errorToString e)
+
+                nextZemanIndex curTime =
+                    case state of
+                        HasData data ->
+                            case data.zemanimState of
+                                HasZemanim zmnm ->
+                                    zmnm.zemanim
+                                        |> Array.indexedMap Tuple.pair
+                                        |> Array.filter
+                                            (\( _, zn ) ->
+                                                Time.posixToMillis zn.value >= curTime
+                                            )
+                                        |> Array.map Tuple.first
+                                        |> Array.toList
+                                        |> List.head
+                                        |> Maybe.withDefault 0
+
+                                _ ->
+                                    0
+
+                        _ ->
+                            0
             in
-            ( { model | state = state }, Cmd.none )
+            ( { model
+                | state = state
+                , -- Set the zeman index to the next zeman
+                  curZemanIndex = nextZemanIndex model.curTime
+              }
+            , Cmd.none
+            )
 
         ChangeDate switchMsg ->
             let
@@ -231,21 +241,21 @@ update msg model =
 
         ChangeZeman switchMsg ->
             let
-                newIndex zmnm =
+                newIndex curIndex zmnm =
                     case switchMsg of
                         Left ->
-                            (if zmnm.curShown == 0 then
+                            (if curIndex == 0 then
                                 Array.length zmnm.zemanim
 
                              else
-                                zmnm.curShown
+                                curIndex
                             )
                                 - 1
 
                         Right ->
                             let
                                 index =
-                                    zmnm.curShown + 1
+                                    curIndex + 1
                             in
                             if index == Array.length zmnm.zemanim then
                                 0
@@ -254,65 +264,60 @@ update msg model =
                                 index
 
                         Middle ->
-                            zmnm.initialShown
+                            curIndex
 
-                newZemanimState state =
-                    case state of
-                        HasZemanim zmnm ->
-                            HasZemanim { zmnm | curShown = newIndex zmnm }
-
-                        _ ->
-                            state
-
-                newState =
+                newZemanimIndex =
                     case model.state of
                         HasData data ->
-                            HasData { data | zemanimState = newZemanimState data.zemanimState }
+                            case data.zemanimState of
+                                HasZemanim zmnm ->
+                                    newIndex model.curZemanIndex zmnm
+
+                                _ ->
+                                    model.curZemanIndex
 
                         _ ->
-                            model.state
+                            model.curZemanIndex
             in
-            ( { model | state = newState }, Cmd.none )
+            ( { model | curZemanIndex = newZemanimIndex }, Cmd.none )
 
         ChangeShiur switchMsg ->
             let
-                newIndex shiurim =
+                newIndex curIndex shiurim =
                     case switchMsg of
                         Left ->
-                            (if shiurim.curShown == 0 then
-                                Array.length shiurim.shiurim
+                            (if curIndex == 0 then
+                                Array.length shiurim
 
                              else
-                                shiurim.curShown
+                                curIndex
                             )
                                 - 1
 
                         Right ->
                             let
                                 index =
-                                    shiurim.curShown + 1
+                                    curIndex + 1
                             in
-                            if index == Array.length shiurim.shiurim then
+                            if index == Array.length shiurim then
                                 0
 
                             else
                                 index
 
                         Middle ->
-                            shiurim.initialShown
+                            curIndex
 
-                newShiurim shiurim =
-                    { shiurim | curShown = newIndex shiurim }
-
-                newState =
+                -- TODO show text
+                newShiurIndex =
                     case model.state of
                         HasData data ->
-                            HasData { data | shiurim = newShiurim data.shiurim }
+                            newIndex model.curShiurIndex data.shiurim
 
                         _ ->
-                            model.state
+                            model.curShiurIndex
             in
-            ( { model | state = newState }, Cmd.none )
+            ( { model | curShiurIndex = newShiurIndex }, Cmd.none )
 
 
 
@@ -344,23 +349,25 @@ view model =
                         ( zemanimLine1, zemanimLine2 ) =
                             case data.zemanimState of
                                 HasZemanim zmnm ->
-                                    case Array.get zmnm.curShown zmnm.zemanim of
+                                    case Array.get model.curZemanIndex zmnm.zemanim of
                                         Just zm ->
                                             ( zm.name, posixToTimeString model.timezone zm.value )
 
                                         Nothing ->
-                                            ( "Error", "No entry for index " ++ String.fromInt zmnm.curShown )
+                                            ( "Error"
+                                            , "No entry for index " ++ String.fromInt model.curZemanIndex
+                                            )
 
                                 GeoError e ->
                                     ( "Error", e )
 
                         ( shiurimLine1, shiurimLine2 ) =
-                            case Array.get data.shiurim.curShown data.shiurim.shiurim of
+                            case Array.get model.curShiurIndex data.shiurim of
                                 Just shiur ->
                                     ( shiur.name, shiur.value )
 
                                 Nothing ->
-                                    ( "Error", "No entry for index " ++ String.fromInt data.shiurim.curShown )
+                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex )
                     in
                     [ switcher data.hdate data.date ChangeDate
                     , br [] []
