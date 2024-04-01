@@ -92,3 +92,7 @@ button {
     padding: 0 1em;
     width: 60vw;
 }
+
+.sub-text {
+    font-size: 10px;
+}

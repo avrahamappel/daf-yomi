@@ -346,20 +346,33 @@ view model =
 
                 HasData data ->
                     let
-                        ( zemanimLine1, zemanimLine2 ) =
+                        ( zemanimLine1, zemanimLine2, location ) =
                             case data.zemanimState of
                                 HasZemanim zmnm ->
+                                    let
+                                        locationString =
+                                            case zmnm.locationName of
+                                                Just locationName ->
+                                                    locationName
+
+                                                Nothing ->
+                                                    zmnm.latitude ++ ", " ++ zmnm.longitude
+                                    in
                                     case Array.get model.curZemanIndex zmnm.zemanim of
                                         Just zm ->
-                                            ( zm.name, posixToTimeString model.timezone zm.value )
+                                            ( zm.name
+                                            , posixToTimeString model.timezone zm.value
+                                            , locationString
+                                            )
 
                                         Nothing ->
                                             ( "Error"
                                             , "No entry for index " ++ String.fromInt model.curZemanIndex
+                                            , ""
                                             )
 
                                 GeoError e ->
-                                    ( "Error", e )
+                                    ( "Error", e, "" )
 
                         ( shiurimLine1, shiurimLine2 ) =
                             case Array.get model.curShiurIndex data.shiurim of
@@ -374,6 +387,7 @@ view model =
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
                     , br [] []
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
+                    , div [ class "sub-text" ] [ text location ]
                     ]
     in
     div [ id "app" ] vs
