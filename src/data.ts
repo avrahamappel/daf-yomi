@@ -1,4 +1,4 @@
-import { HDate, Zmanim, GeoLocation } from '@hebcal/core'
+import { HDate, Zmanim, GeoLocation, HebrewCalendar, flags, Location, CandleLightingEvent } from '@hebcal/core'
 import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
@@ -38,18 +38,18 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         getTimezone()
     );
 
-// TODO generate a calendar and use for getting parsha, yom tov etc.
-
 const getZemanim = (hdate: HDate, pos: Position) => {
     try {
         const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
+        const erevShabbosYtZemanim = getErevShabbosYtZemanim(hdate, gloc, zmn);
         const zemanim = [
             { name: 'חצות הלילה', value: zmn.chatzotNight().getTime() },
             { name: 'עלות השחר', value: zmn.sunriseOffset(-72).getTime() },
             { name: 'הנץ החמה', value: zmn.neitzHaChama().getTime() },
-            { name: 'ס"ז קריאת שמע', value: zmn.sofZmanShmaMGA().getTime() },
+            { name: 'ס״ז קריאת שמע', value: zmn.sofZmanShmaMGA().getTime() },
             { name: 'חצות היום', value: zmn.chatzot().getTime() },
+            ...erevShabbosYtZemanim,
             { name: 'שקיעת החמה', value: zmn.shkiah().getTime() },
             { name: 'צאת הכוכבים', value: zmn.sunsetOffset(72).getTime() },
         ];
@@ -63,6 +63,49 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     } catch (error) {
         return error.message ?? error;
     }
+};
+
+type Profile = 'toronto-winter' | 'toronto-summer' | 'milwaukee';
+
+/**
+ * Get the candle lighting times for this date (if erev shabbos or y"t)
+ */
+const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) => {
+    // Get current profile
+    const params = Object.fromEntries(
+        window.location.search.slice(1).split('&').map(pair => pair.split('='))
+    );
+    const profile: Profile = params.profile || 'toronto-winter';
+    const location = new Location(
+        gloc.getLatitude(),
+        gloc.getLongitude(),
+        false,
+        gloc.getTimeZone()
+    );
+    const events = HebrewCalendar.calendar({
+        candlelighting: true,
+        candleLightingMins: profile === 'milwaukee' ? 18 : 15,
+        mask: flags.EREV, // Include yom tov
+        start: hdate,
+        end: hdate,
+        location,
+    });
+
+    return events.reduce((acc, event) => {
+        if (event instanceof CandleLightingEvent) {
+            if (profile === 'toronto-summer') {
+                // Calculate plag with MG"A hours
+                // MG"A hours are 12 minutes longer than GR"A hours, and plag is 4.75 hours after chatzos
+                const mgaOffset = 4.75 * 12 * 60 * 1000;
+                const mgaPlag = zmn.plagHaMincha().getTime() + mgaOffset;
+                // mincha is 40 minutes earlier
+                acc.push({ name: 'מנחה מוקדמת', value: mgaPlag - (40 * 60 * 1000) });
+                acc.push({ name: 'פלג המנחה', value: mgaPlag });
+            }
+            acc.push({ name: 'הדלקת נרות', value: event.eventTime.getTime() });
+        }
+        return acc;
+    }, [] as { name: string, value: number }[]);
 };
 
 
@@ -80,7 +123,7 @@ const getShiurim = (hdate: HDate) => {
     }));
     const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
     const nachYomiShiur = {
-        name: 'נ"ך יומי',
+        name: 'נ״ך יומי',
         value: nachYomi.render('he'),
     };
 
