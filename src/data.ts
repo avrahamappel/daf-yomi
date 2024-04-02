@@ -65,7 +65,7 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     }
 };
 
-type Profile = 'toronto-winter' | 'toronto-summer' | 'milwaukee';
+type Profile = 'to-w' | 'to-s' | 'mwk';
 
 /**
  * Get the candle lighting times for this date (if erev shabbos or y"t)
@@ -75,7 +75,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
     const params = Object.fromEntries(
         window.location.search.slice(1).split('&').map(pair => pair.split('='))
     );
-    const profile: Profile = params.profile || 'toronto-winter';
+    const profile: Profile = params.p || 'to-w';
     const location = new Location(
         gloc.getLatitude(),
         gloc.getLongitude(),
@@ -84,7 +84,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
     );
     const events = HebrewCalendar.calendar({
         candlelighting: true,
-        candleLightingMins: profile === 'milwaukee' ? 18 : 15,
+        candleLightingMins: profile === 'mwk' ? 18 : 15,
         mask: flags.EREV, // Include yom tov
         start: hdate,
         end: hdate,
@@ -93,7 +93,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
 
     return events.reduce((acc, event) => {
         if (event instanceof CandleLightingEvent) {
-            if (profile === 'toronto-summer') {
+            if (profile === 'to-s') {
                 // Calculate plag with MG"A hours
                 // MG"A hours are 12 minutes longer than GR"A hours, and plag is 4.75 hours after chatzos
                 const mgaOffset = 4.75 * 12 * 60 * 1000;
