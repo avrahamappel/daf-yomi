@@ -3,30 +3,6 @@ import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
 /**
- * Get timezone as a string.
- * Should be compatible across various browsers that don't necessarily support the full Intl API
- */
-const getTimezone = (): string => {
-    let timezone: string | undefined;
-
-    try {
-        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    } catch (_) { }
-
-    if (timezone === undefined) {
-        let offset = (new Date()).getTimezoneOffset();
-
-        let hours = Math.floor(Math.abs(offset) / 60);
-        let minutes = Math.abs(offset) % 60;
-        let sign = offset > 0 ? '+' : offset < 0 ? '-' : '';
-
-        timezone = `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
-
-    return timezone;
-};
-
-/**
  * Build an instance of hebcal's GeoLocation
  */
 const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
@@ -35,7 +11,8 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         latitude,
         longitude,
         altitude || 0,
-        getTimezone()
+        // Don't need a time zone, we send a raw timestamp back to the Elm app
+        'Utc'
     );
 
 const getZemanim = (hdate: HDate, pos: Position) => {
