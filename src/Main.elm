@@ -215,8 +215,13 @@ update msg model =
             in
             ( { model
                 | state = state
-                , -- Set the zeman index to the next zeman
-                  curZemanIndex = nextZemanIndex model.curTime
+                , -- If currently showing today, set the zeman index to the next zeman for today
+                  curZemanIndex =
+                    if model.curTime == model.initTime then
+                        nextZemanIndex model.curTime
+
+                    else
+                        model.curZemanIndex
               }
             , Cmd.none
             )
