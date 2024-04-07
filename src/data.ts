@@ -52,7 +52,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
     const params = Object.fromEntries(
         window.location.search.slice(1).split('&').map(pair => pair.split('='))
     );
-    const profile: Profile = params.p || 'to-w';
+    const profile: Profile = params.p || 'mwk';
     const location = new Location(
         gloc.getLatitude(),
         gloc.getLongitude(),
