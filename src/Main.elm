@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode
 import Task
-import Time exposing (Posix, Zone, ZoneName(..))
+import Time exposing (Posix, Weekday(..), Zone)
 
 
 
@@ -61,17 +61,19 @@ type alias Data =
     , dafYomi : String
     , zemanimState : ZemanimState
     , shiurim : Shiurim
+    , parsha : Maybe String
     }
 
 
 dataDecoder : Decoder Data
 dataDecoder =
-    D.map5 Data
+    D.map6 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
         (D.field "dafYomi" D.string)
         (D.field "zemanim" zemanimStateDecoder)
         (D.field "shiurim" shiurimDecoder)
+        (D.field "parsha" (D.nullable D.string))
 
 
 type ZemanimState
@@ -386,8 +388,41 @@ view model =
 
                                 Nothing ->
                                     ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex )
+
+                        weekAndDay zone time =
+                            let
+                                weekday =
+                                    case Time.toWeekday zone (Time.millisToPosix time) of
+                                        Sun ->
+                                            "יום א׳"
+
+                                        Mon ->
+                                            "יום ב׳"
+
+                                        Tue ->
+                                            "יום ג׳"
+
+                                        Wed ->
+                                            "יום ד׳"
+
+                                        Thu ->
+                                            "יום ה׳"
+
+                                        Fri ->
+                                            "יום ו׳"
+
+                                        Sat ->
+                                            "שבת קודש"
+                            in
+                            case data.parsha of
+                                Nothing ->
+                                    weekday
+
+                                Just parsha ->
+                                    weekday ++ " " ++ parsha
                     in
-                    [ switcher data.hdate data.date ChangeDate
+                    [ switcher data.hdate (weekAndDay model.timezone model.curTime) ChangeDate
+                    , div [ class "sub-text" ] [ text data.date ]
                     , br [] []
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
                     , br [] []

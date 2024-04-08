@@ -1,4 +1,13 @@
-import { HDate, Zmanim, GeoLocation, HebrewCalendar, flags, Location, CandleLightingEvent } from '@hebcal/core'
+import {
+    HDate,
+    Zmanim,
+    GeoLocation,
+    HebrewCalendar,
+    flags,
+    Location,
+    CandleLightingEvent,
+    Sedra
+} from '@hebcal/core'
 import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
@@ -14,6 +23,8 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         // Don't need a time zone, we send a raw timestamp back to the Elm app
         'Utc'
     );
+
+type Zeman = { name: string, value: number };
 
 const getZemanim = (hdate: HDate, pos: Position) => {
     try {
@@ -82,7 +93,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
             acc.push({ name: 'הדלקת נרות', value: event.eventTime.getTime() });
         }
         return acc;
-    }, [] as { name: string, value: number }[]);
+    }, [] as Zeman[]);
 };
 
 
@@ -101,7 +112,7 @@ const getShiurim = (hdate: HDate) => {
     const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
     const nachYomiShiur = {
         name: 'נ״ך יומי',
-        value: nachYomi.render('he'),
+        value: nachYomi.render('he-x-NoNikud'),
     };
 
     return [
@@ -110,20 +121,26 @@ const getShiurim = (hdate: HDate) => {
     ]
 };
 
+/**
+ * Get the parsha of the week
+ */
+const getParsha = (hdate: HDate) => new Sedra(hdate.getFullYear()).getString(hdate, 'he-x-NoNikud');
+
 export const getData = (timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
     const daf = new DafYomi(hdate);
 
-    let zemanim = getZemanim(hdate, pos);
-    let shiurim = getShiurim(hdate);
+    const zemanim = getZemanim(hdate, pos);
+    const shiurim = getShiurim(hdate);
+    const parsha = getParsha(hdate);
 
     return {
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
-        // TODO day of week
         dafYomi: daf.render('he'),
         zemanim,
-        shiurim
+        shiurim,
+        parsha
     };
 };
