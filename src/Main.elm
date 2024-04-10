@@ -421,7 +421,6 @@ view model =
                     in
                     [ switcher data.hdate (weekAndDay model.timezone model.curTime) ChangeDate
                     , div [ class "sub-text" ] [ text data.date ]
-                    , br [] []
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
                     , br [] []
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
