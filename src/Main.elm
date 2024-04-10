@@ -2,8 +2,8 @@ port module Main exposing (..)
 
 import Array exposing (Array)
 import Browser
-import Html exposing (Html, br, button, div, span, text)
-import Html.Attributes exposing (class, id, style)
+import Html exposing (Html, a, br, button, div, span, text)
+import Html.Attributes exposing (class, href, id, style, target)
 import Html.Events exposing (onClick)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode
@@ -58,7 +58,6 @@ type State
 type alias Data =
     { date : String
     , hdate : String
-    , dafYomi : String
     , zemanimState : ZemanimState
     , shiurim : Shiurim
     , parsha : Maybe String
@@ -67,10 +66,9 @@ type alias Data =
 
 dataDecoder : Decoder Data
 dataDecoder =
-    D.map6 Data
+    D.map5 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
-        (D.field "dafYomi" D.string)
         (D.field "zemanim" zemanimStateDecoder)
         (D.field "shiurim" shiurimDecoder)
         (D.field "parsha" (D.nullable D.string))
@@ -133,14 +131,15 @@ type alias Shiurim =
 shiurimDecoder : Decoder Shiurim
 shiurimDecoder =
     D.array
-        (D.map2 Shiur
+        (D.map3 Shiur
             (D.field "name" D.string)
             (D.field "value" D.string)
+            (D.field "url" (D.nullable D.string))
         )
 
 
 type alias Shiur =
-    { name : String, value : String }
+    { name : String, value : String, url : Maybe String }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -381,13 +380,13 @@ view model =
                                 GeoError e ->
                                     ( "Error", e, "" )
 
-                        ( shiurimLine1, shiurimLine2 ) =
+                        ( shiurimLine1, shiurimLine2, shiurimLink ) =
                             case Array.get model.curShiurIndex data.shiurim of
                                 Just shiur ->
-                                    ( shiur.name, shiur.value )
+                                    ( shiur.name, shiur.value, shiur.url )
 
                                 Nothing ->
-                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex )
+                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex, Nothing )
 
                         weekAndDay zone time =
                             let
@@ -423,9 +422,14 @@ view model =
                     in
                     [ switcher data.hdate (weekAndDay model.timezone model.curTime) ChangeDate
                     , div [ class "sub-text" ] [ text data.date ]
-                    , br [] []
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
-                    , br [] []
+                    , div [ class "sub-text" ]
+                        [ a
+                            [ href (shiurimLink |> Maybe.withDefault "")
+                            , target "_blank"
+                            ]
+                            [ text "Link" ]
+                        ]
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
                     , div [ class "sub-text" ] [ text location ]
                     ]

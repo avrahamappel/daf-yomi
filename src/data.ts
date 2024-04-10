@@ -8,7 +8,7 @@ import {
     CandleLightingEvent,
     Sedra
 } from '@hebcal/core'
-import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
+import { DafYomiEvent, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
 
 /**
@@ -105,14 +105,21 @@ const getShiurim = (hdate: HDate) => {
         hdate,
         hdate.subtract(1, 'year'),
         hdate.subtract(2, 'years')
-    ].map((hd) => ({
-        name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
-        value: (new DafYomi(hd)).render('he')
-    }));
+    ].map((hd) => {
+        let daf = new DafYomiEvent(hd);
+        let url = daf.url();
+
+        return {
+            name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
+            value: daf.renderBrief('he-x-NoNikud'),
+            url
+        };
+    });
     const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
     const nachYomiShiur = {
         name: 'נ״ך יומי',
         value: nachYomi.render('he-x-NoNikud'),
+        url: nachYomi.url(),
     };
 
     return [
@@ -129,7 +136,6 @@ const getParsha = (hdate: HDate) => new Sedra(hdate.getFullYear()).getString(hda
 export const getData = (timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
-    const daf = new DafYomi(hdate);
 
     const zemanim = getZemanim(hdate, pos);
     const shiurim = getShiurim(hdate);
@@ -138,7 +144,6 @@ export const getData = (timestamp: number, pos: Position) => {
     return {
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
-        dafYomi: daf.render('he'),
         zemanim,
         shiurim,
         parsha
