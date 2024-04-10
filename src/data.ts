@@ -129,7 +129,6 @@ const getParsha = (hdate: HDate) => new Sedra(hdate.getFullYear()).getString(hda
 export const getData = (timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
-    const daf = new DafYomi(hdate);
 
     const zemanim = getZemanim(hdate, pos);
     const shiurim = getShiurim(hdate);
@@ -138,7 +137,6 @@ export const getData = (timestamp: number, pos: Position) => {
     return {
         date: date.toDateString(),
         hdate: hdate.renderGematriya(true),
-        dafYomi: daf.render('he'),
         zemanim,
         shiurim,
         parsha

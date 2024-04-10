@@ -58,7 +58,6 @@ type State
 type alias Data =
     { date : String
     , hdate : String
-    , dafYomi : String
     , zemanimState : ZemanimState
     , shiurim : Shiurim
     , parsha : Maybe String
@@ -67,10 +66,9 @@ type alias Data =
 
 dataDecoder : Decoder Data
 dataDecoder =
-    D.map6 Data
+    D.map5 Data
         (D.field "date" D.string)
         (D.field "hdate" D.string)
-        (D.field "dafYomi" D.string)
         (D.field "zemanim" zemanimStateDecoder)
         (D.field "shiurim" shiurimDecoder)
         (D.field "parsha" (D.nullable D.string))
