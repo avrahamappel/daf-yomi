@@ -410,7 +410,7 @@ view model =
                                             "יום ו׳"
 
                                         Sat ->
-                                            "שבת קודש"
+                                            "ש״ק"
                             in
                             case data.parsha of
                                 Nothing ->
