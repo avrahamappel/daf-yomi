@@ -30,12 +30,14 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     try {
         const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
+        const erevPesachZemanim = getErevPesachZemanim(hdate, zmn);
         const erevShabbosYtZemanim = getErevShabbosYtZemanim(hdate, gloc, zmn);
         const zemanim = [
             { name: 'חצות הלילה', value: zmn.chatzotNight().getTime() },
             { name: 'עלות השחר', value: zmn.sunriseOffset(-72).getTime() },
             { name: 'הנץ החמה', value: zmn.neitzHaChama().getTime() },
             { name: 'ס״ז קריאת שמע', value: zmn.sofZmanShmaMGA().getTime() },
+            ...erevPesachZemanim,
             { name: 'חצות היום', value: zmn.chatzot().getTime() },
             ...erevShabbosYtZemanim,
             { name: 'שקיעת החמה', value: zmn.shkiah().getTime() },
@@ -96,6 +98,21 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
     }, [] as Zeman[]);
 };
 
+/**
+ * Get zemanim for erev Pesach acc. to MG"A
+ */
+const getErevPesachZemanim = (hdate: HDate, zmn: Zmanim) => {
+    if (!(hdate.getMonth() === 1 && hdate.getDate() === 14)) return [];
+
+    const [alot72, temporalHour] = zmn.getTemporalHour72();
+    const sofZmanAchila = Math.floor(alot72.getTime() + 4 * temporalHour);
+    const sofZmanBiur = Math.floor(alot72.getTime() + 5 * temporalHour);
+
+    return [
+        { name: "ס״ז אכילת חמץ", value: sofZmanAchila },
+        { name: "ס״ז ביאור חמץ", value: sofZmanBiur },
+    ];
+};
 
 /**
  * Get the shiurim for the given date
