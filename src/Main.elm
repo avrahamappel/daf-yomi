@@ -456,16 +456,20 @@ posixToTimeString z p =
         pm =
             hour - 12 >= 0
 
+        hour12 =
+            if pm then
+                hour - 12
+
+            else
+                hour
+
         formattedTime =
             String.fromInt
-                (if pm then
-                    hour - 12
-
-                 else if hour == 0 then
+                (if hour12 == 0 then
                     12
 
                  else
-                    hour
+                    hour12
                 )
                 ++ ":"
                 ++ String.padLeft 2 '0' (String.fromInt minute)
