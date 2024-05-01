@@ -118,14 +118,10 @@ const getErevPesachZemanim = (hdate: HDate, zmn: Zmanim) => {
  * Get the shiurim for the given date
  */
 const getShiurim = (hdate: HDate) => {
-    const dafShiurim = [
-        hdate,
-        hdate.subtract(1, 'year'),
-        hdate.subtract(2, 'years')
-    ].map((hd) => ({
-        name: "דף היומי" + (hd.isSameDate(hdate) ? '' : ` - ${hd.renderGematriya().split(' ').slice(-1)}`),
-        value: (new DafYomi(hd)).render('he')
-    }));
+    const dafShiur = {
+        name: "דף היומי" + '',
+        value: (new DafYomi(hdate)).render('he')
+    };
     const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
     const nachYomiShiur = {
         name: 'נ״ך יומי',
@@ -133,7 +129,7 @@ const getShiurim = (hdate: HDate) => {
     };
 
     return [
-        ...dafShiurim,
+        dafShiur,
         nachYomiShiur,
     ]
 };
