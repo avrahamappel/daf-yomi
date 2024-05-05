@@ -25,6 +25,11 @@
         version = "1.0.0";
       };
 
+      "ryan-haskell/date-format" = {
+        sha256 = "18r9h72h3i507snjf5aw099s2ymv2qsr3x3ibnsmap407s98355y";
+        version = "1.0.0";
+      };
+
       "elm/url" = {
         sha256 = "0av8x5syid40sgpl5vd7pry2rq0q4pga28b4yykn9gd9v12rs3l4";
         version = "1.0.0";
