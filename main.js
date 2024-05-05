@@ -2,20 +2,12 @@ import './style.css'
 import { Elm } from './src/Main.elm'
 import { getData } from './src/data'
 import { getLocation } from './src/location'
-import { Observable, combineLatest } from 'rxjs';
 
 const app = Elm.Main.init({ node: document.getElementById('app') });
 
-const position$ = getLocation();
-const getDataPort$ = new Observable((ob) => {
-    app.ports.getData.subscribe(timestamp => {
-        ob.next(timestamp);
-    });
-});
+getLocation((pos) => app.ports.setLocation.send(pos));
 
-// Update when either app fires or location changes
-combineLatest([getDataPort$, position$])
-    .subscribe(([timestamp, pos]) => {
-        const data = getData(timestamp, pos);
-        app.ports.returnData.send(data);
-    })
+app.ports.getData.subscribe(({ timestamp, position }) => {
+    const data = getData(timestamp, position);
+    app.ports.returnData.send(data);
+})

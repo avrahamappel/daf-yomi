@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode
+import Location exposing (Position)
 import Task
 import Time exposing (Posix, Weekday(..), Zone)
 
@@ -16,7 +17,7 @@ import Time exposing (Posix, Weekday(..), Zone)
 -- PORTS
 
 
-port getData : Int -> Cmd msg
+port getData : { timestamp : Int, position : Position } -> Cmd msg
 
 
 port returnData : (Json.Encode.Value -> msg) -> Sub msg
@@ -53,7 +54,8 @@ type alias Model =
 type State
     = LoadingData
     | Error String
-    | HasData Data
+    | HasPosition Position
+    | HasData Data Position
 
 
 type alias Data =
@@ -156,6 +158,7 @@ init _ =
 type Msg
     = None
     | AdjustTime Zone Posix
+    | SetLocation Json.Encode.Value
     | SetData Json.Encode.Value
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
@@ -179,22 +182,44 @@ update msg model =
                     Time.posixToMillis pos
             in
             ( { model | initTime = curTime, curTime = curTime, timezone = tz }
-            , getData curTime
+            , Cmd.none
             )
+
+        SetLocation json ->
+            let
+                position =
+                    D.decodeValue Location.decodePosition json
+            in
+            case position of
+                Err e ->
+                    ( { model | state = Error (D.errorToString e) }, Cmd.none )
+
+                Ok pos ->
+                    ( { model | state = HasPosition pos }
+                    , getData
+                        { timestamp = model.curTime
+                        , position = pos
+                        }
+                    )
 
         SetData json ->
             let
                 state =
-                    case D.decodeValue dataDecoder json of
-                        Ok data ->
-                            HasData data
+                    case model.state of
+                        HasPosition pos ->
+                            case D.decodeValue dataDecoder json of
+                                Ok data ->
+                                    HasData data pos
 
-                        Err e ->
-                            Error (D.errorToString e)
+                                Err e ->
+                                    Error (D.errorToString e)
+
+
+                        _ -> model.state
 
                 nextZemanIndex curTime =
                     case state of
-                        HasData data ->
+                        HasData data _ ->
                             case data.zemanimState of
                                 HasZemanim zmnm ->
                                     zmnm.zemanim
@@ -241,9 +266,13 @@ update msg model =
                             -- Reset to initial
                             model.initTime
             in
-            ( { model | curTime = newTime, state = LoadingData }
-            , getData newTime
-            )
+            case model.state of
+                HasData _ pos ->
+                    ( { model | curTime = newTime, state = HasPosition pos }
+                    , getData { timestamp = newTime, position = pos }
+                    )
+
+                _ -> ( model, Cmd.none )
 
         ChangeZeman switchMsg ->
             let
@@ -274,7 +303,7 @@ update msg model =
 
                 newZemanimIndex =
                     case model.state of
-                        HasData data ->
+                        HasData data _ ->
                             case data.zemanimState of
                                 HasZemanim zmnm ->
                                     newIndex model.curZemanIndex zmnm
@@ -317,7 +346,7 @@ update msg model =
                 -- TODO show text
                 newShiurIndex =
                     case model.state of
-                        HasData data ->
+                        HasData data _ ->
                             newIndex model.curShiurIndex data.shiurim
 
                         _ ->
@@ -332,7 +361,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    returnData SetData
+    Sub.batch
+        [ Location.setLocation SetLocation
+        , returnData SetData
+        ]
 
 
 
@@ -350,7 +382,10 @@ view model =
                 Error e ->
                     [ span [ style "color" "red" ] [ text e ] ]
 
-                HasData data ->
+                HasPosition _ ->
+                    [ text "Loading..." ]
+
+                HasData data _ ->
                     let
                         ( zemanimLine1, zemanimLine2, location ) =
                             case data.zemanimState of

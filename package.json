@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite build -w & vite preview --host 0.0.0.0",
-    "check": "elm make src/Main.elm --output /dev/null"
+    "check": "elm make --output /dev/null"
   },
   "devDependencies": {
     "@vitejs/plugin-legacy": "^5.2.0",
@@ -18,7 +18,6 @@
   "dependencies": {
     "@hebcal/core": "^5.2.2",
     "@hebcal/learning": "^5.0.2",
-    "rxjs": "^7.8.1",
     "temporal-polyfill": "^0.2.1"
   }
 }
