@@ -12,8 +12,8 @@
           # Update manifests if elm.json changed
           if [[ "$(git diff --name-only)" =~ elm.json ]]; then
             echo 'elm.json changed, updating manifest files'
-            elm2nix convert > elm-srcs.nix
-            elm2nix snapshot
+            ${pkgs.elm2nix}/bin/elm2nix convert > elm-srcs.nix
+            ${pkgs.elm2nix}/bin/elm2nix snapshot
           fi
         '';
 
