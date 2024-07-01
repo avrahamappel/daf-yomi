@@ -29,9 +29,18 @@ export const getLocation = (next: (pos: Position) => void): void => {
         });
 
     // Try geolocation (currently not working on KaiOS)
-    // if ('geolocation' in navigator) {
-    //     navigator.geolocation.watchPosition(
-    //         ({ coords }) => ob.next(geoLocation(coords)), (err) => ob.error(err)
-    //     );
-    // }
+    if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition(
+            ({ coords }) => {
+                const { longitude, latitude, altitude } = coords;
+                const pos: Position = { longitude, latitude };
+
+                if (altitude !== null) {
+                    pos.altitude = altitude;
+                }
+
+                next(pos);
+            }
+        );
+    }
 };
