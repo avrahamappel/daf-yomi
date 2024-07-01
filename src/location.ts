@@ -1,4 +1,5 @@
 import { Settings } from "./settings";
+import { Geolocation } from '@capacitor/geolocation';
 
 export type Position = {
     name?: string,
@@ -40,24 +41,20 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
     }
 
     if (settings.locationMethod === 'gps') {
-        if ('geolocation' in navigator) {
-            navigator.geolocation.watchPosition(
-                ({ coords }) => {
-                    const { longitude, latitude, altitude } = coords;
-                    const pos: Position = { longitude, latitude };
+        Geolocation.watchPosition({}, (geoPos, err) => {
+            if (err) {
+                error(err.code ? `GPS Error ${err.code}: ${err.message}` : err.message || "Geolocation error")
+            }
+            if (!geoPos) return;
 
-                    if (altitude !== null) {
-                        pos.altitude = altitude;
-                    }
+            const { longitude, latitude, altitude } = geoPos.coords;
+            const pos: Position = { longitude, latitude };
 
-                    next(pos);
-                },
-                (err) => {
-                    error(`GPS Error ${err.code}: ${err.message}`)
-                }
-            );
-        } else {
-            error('Geolocation not available on this device');
-        }
+            if (altitude !== null) {
+                pos.altitude = altitude;
+            }
+
+            next(pos);
+        });
     }
 };
