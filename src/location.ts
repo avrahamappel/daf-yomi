@@ -39,12 +39,25 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
             });
     }
 
-    // if (settings.locationMethod === 'gps') {
-    // Try geolocation (currently not working on KaiOS)
-    // if ('geolocation' in navigator) {
-    //     navigator.geolocation.watchPosition(
-    //         ({ coords }) => ob.next(geoLocation(coords)), (err) => ob.error(err)
-    //     );
-    // }
-    // }
+    if (settings.locationMethod === 'gps') {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.watchPosition(
+                ({ coords }) => {
+                    const { longitude, latitude, altitude } = coords;
+                    const pos: Position = { longitude, latitude };
+
+                    if (altitude !== null) {
+                        pos.altitude = altitude;
+                    }
+
+                    next(pos);
+                },
+                (err) => {
+                    error(`GPS Error ${err.code}: ${err.message}`)
+                }
+            );
+        } else {
+            error('Geolocation not available on this device');
+        }
+    }
 };
