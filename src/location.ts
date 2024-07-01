@@ -1,3 +1,5 @@
+import { Geolocation } from '@capacitor/geolocation';
+
 export type Position = {
     name?: string,
     longitude: number,
@@ -29,18 +31,16 @@ export const getLocation = (next: (pos: Position) => void): void => {
         });
 
     // Try geolocation (currently not working on KaiOS)
-    if ('geolocation' in navigator) {
-        navigator.geolocation.watchPosition(
-            ({ coords }) => {
-                const { longitude, latitude, altitude } = coords;
-                const pos: Position = { longitude, latitude };
+    Geolocation.watchPosition({}, (geoPos) => {
+        if (!geoPos) return;
 
-                if (altitude !== null) {
-                    pos.altitude = altitude;
-                }
+        const { longitude, latitude, altitude } = geoPos.coords;
+        const pos: Position = { longitude, latitude };
 
-                next(pos);
-            }
-        );
-    }
+        if (altitude !== null) {
+            pos.altitude = altitude;
+        }
+
+        next(pos);
+    });
 };
