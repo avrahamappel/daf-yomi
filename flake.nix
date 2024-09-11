@@ -1,6 +1,8 @@
 {
   description = "Today's daf";
 
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
@@ -35,7 +37,7 @@
             pname = packageJson.name;
             version = packageJson.version;
             src = ./.;
-            npmDepsHash = "sha256-K/JLlU/Xw6/fNfnHW8ZejIjjK/l+rEAxrc45ncm0Mio=";
+            npmDepsHash = "sha256-EACiG4H8SkRQ1XKr7uv19WkF6LjlzaB0e+Lc/+sBNLA=";
             nativeBuildInputs = with pkgs; [ elmPackages.elm ];
             configurePhase = pkgs.elmPackages.fetchElmDeps {
               elmPackages = import ./elm-srcs.nix;
