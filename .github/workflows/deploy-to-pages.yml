@@ -31,7 +31,7 @@ jobs:
         uses: cachix/install-nix-action@v22
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Build
         run: nix build .#githubPages
