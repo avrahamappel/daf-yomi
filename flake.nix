@@ -26,6 +26,7 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; with elmPackages; [
             elmWrapper
+            elm2nix
             elm-language-server
             elm-format
             nodejs
