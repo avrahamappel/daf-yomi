@@ -1,12 +1,13 @@
 port module Main exposing (..)
 
-import Array exposing (Array)
+import Array
 import Browser
+import Data exposing (..)
 import Format exposing (posixToTimeString)
 import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
-import Json.Decode as D exposing (Decoder)
+import Json.Decode as D
 import Json.Encode
 import Location exposing (Position)
 import Task
@@ -56,92 +57,6 @@ type State
     | Error String
     | HasPosition Position
     | HasData Data Position
-
-
-type alias Data =
-    { date : String
-    , hdate : String
-    , zemanimState : ZemanimState
-    , shiurim : Shiurim
-    , parsha : Maybe String
-    }
-
-
-dataDecoder : Decoder Data
-dataDecoder =
-    D.map5 Data
-        (D.field "date" D.string)
-        (D.field "hdate" D.string)
-        (D.field "zemanim" zemanimStateDecoder)
-        (D.field "shiurim" shiurimDecoder)
-        (D.field "parsha" (D.nullable D.string))
-
-
-type ZemanimState
-    = GeoError String
-    | HasZemanim Zemanim
-
-
-zemanimStateDecoder : Decoder ZemanimState
-zemanimStateDecoder =
-    D.oneOf
-        [ D.map GeoError D.string
-        , D.map HasZemanim zemanimDecoder
-        ]
-
-
-type alias Zemanim =
-    { zemanim : Array Zeman
-    , latitude : String
-    , longitude : String
-    , locationName : Maybe String
-    }
-
-
-zemanimDecoder : Decoder Zemanim
-zemanimDecoder =
-    D.map4 zemanim
-        (D.field "latitude" D.string)
-        (D.field "longitude" D.string)
-        (D.field "name" (D.nullable D.string))
-        (D.field "zemanim" (D.array zemanDecoder))
-
-
-zemanim : String -> String -> Maybe String -> Array Zeman -> Zemanim
-zemanim lat long name zmnm =
-    Zemanim zmnm lat long name
-
-
-type alias Zeman =
-    { name : String, value : Posix }
-
-
-zemanDecoder : Decoder Zeman
-zemanDecoder =
-    let
-        zeman n v =
-            Time.millisToPosix v |> Zeman n
-    in
-    D.map2 zeman
-        (D.field "name" D.string)
-        (D.field "value" D.int)
-
-
-type alias Shiurim =
-    Array Shiur
-
-
-shiurimDecoder : Decoder Shiurim
-shiurimDecoder =
-    D.array
-        (D.map2 Shiur
-            (D.field "name" D.string)
-            (D.field "value" D.string)
-        )
-
-
-type alias Shiur =
-    { name : String, value : String }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -214,8 +129,8 @@ update msg model =
                                 Err e ->
                                     Error (D.errorToString e)
 
-
-                        _ -> model.state
+                        _ ->
+                            model.state
 
                 nextZemanIndex curTime =
                     case state of
@@ -272,7 +187,8 @@ update msg model =
                     , getData { timestamp = newTime, position = pos }
                     )
 
-                _ -> ( model, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
 
         ChangeZeman switchMsg ->
             let
