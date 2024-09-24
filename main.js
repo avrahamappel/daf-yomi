@@ -9,7 +9,7 @@ const initialSettings = getSettings();
 
 getLocation(initialSettings, (pos) => app.ports.setLocation.send(pos));
 
-app.ports.getData.subscribe(({ timestamp, position }) => {
-    const data = getData(timestamp, position);
+app.ports.getData.subscribe(({ settings, timestamp, position }) => {
+    const data = getData(settings, timestamp, position);
     app.ports.returnData.send(data);
 })

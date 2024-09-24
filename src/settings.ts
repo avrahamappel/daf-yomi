@@ -1,5 +1,6 @@
-import { Profile } from "./data";
 import { Position } from "./location";
+
+type Profile = 'to-w' | 'to-s' | 'mwk';
 
 type BaseSettings = {
     profile: Profile,
