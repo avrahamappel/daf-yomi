@@ -16,7 +16,7 @@
     "vite-plugin-elm": "^2.9.0"
   },
   "dependencies": {
-    "@hebcal/core": "^5.2.2",
+    "@hebcal/core": "^5.5.0",
     "@hebcal/learning": "^5.0.2",
     "temporal-polyfill": "^0.2.1"
   }
