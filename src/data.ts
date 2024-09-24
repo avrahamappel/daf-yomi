@@ -55,7 +55,7 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     }
 };
 
-type Profile = 'to-w' | 'to-s' | 'mwk';
+export type Profile = 'to-w' | 'to-s' | 'mwk';
 
 /**
  * Get the candle lighting times for this date (if erev shabbos or y"t)
