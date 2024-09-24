@@ -10,6 +10,7 @@ import Html.Events exposing (onClick)
 import Json.Decode as D
 import Json.Encode
 import Location exposing (Position)
+import Settings exposing (Settings)
 import Task
 import Time exposing (Posix, Weekday(..), Zone)
 
@@ -18,7 +19,7 @@ import Time exposing (Posix, Weekday(..), Zone)
 -- PORTS
 
 
-port getData : { timestamp : Int, position : Position } -> Cmd msg
+port getData : { settings : Json.Encode.Value, timestamp : Int, position : Position } -> Cmd msg
 
 
 port returnData : (Json.Encode.Value -> msg) -> Sub msg
@@ -28,7 +29,7 @@ port returnData : (Json.Encode.Value -> msg) -> Sub msg
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Json.Encode.Value Model Msg
 main =
     Browser.element
         { init = init
@@ -49,6 +50,7 @@ type alias Model =
     , initTime : Int
     , timezone : Zone
     , state : State
+    , settings : Settings
     }
 
 
@@ -59,9 +61,9 @@ type State
     | HasData Data Position
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Model 0 0 0 0 Time.utc LoadingData
+init : Json.Encode.Value -> ( Model, Cmd Msg )
+init value =
+    ( Model 0 0 0 0 Time.utc LoadingData (Settings.decode value)
     , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
     )
 
@@ -114,6 +116,7 @@ update msg model =
                     , getData
                         { timestamp = model.curTime
                         , position = pos
+                        , settings = Settings.encode model.settings
                         }
                     )
 
@@ -184,7 +187,7 @@ update msg model =
             case model.state of
                 HasData _ pos ->
                     ( { model | curTime = newTime, state = HasPosition pos }
-                    , getData { timestamp = newTime, position = pos }
+                    , getData { timestamp = newTime, position = pos, settings = Settings.encode model.settings }
                     )
 
                 _ ->
