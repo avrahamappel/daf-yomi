@@ -49,21 +49,27 @@ type alias Model =
     , curZemanIndex : Int
     , initTime : Int
     , timezone : Zone
-    , state : State
+    , dataState : DataState
+    , locationState : LocationState
     , settings : Settings
     }
 
 
-type State
+type DataState
     = LoadingData
-    | Error String
+    | DataError String
+    | HasData Data
+
+
+type LocationState
+    = LoadingPosition
+    | PositionError String
     | HasPosition Position
-    | HasData Data Position
 
 
 init : Json.Encode.Value -> ( Model, Cmd Msg )
 init value =
-    ( Model 0 0 0 0 Time.utc LoadingData (Settings.decode value)
+    ( Model 0 0 0 0 Time.utc LoadingData LoadingPosition (Settings.decode value)
     , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
     )
 
@@ -109,10 +115,10 @@ update msg model =
             in
             case position of
                 Err e ->
-                    ( { model | state = Error (D.errorToString e) }, Cmd.none )
+                    ( { model | locationState = PositionError (D.errorToString e) }, Cmd.none )
 
                 Ok pos ->
-                    ( { model | state = HasPosition pos }
+                    ( { model | locationState = HasPosition pos }
                     , getData
                         { timestamp = model.curTime
                         , position = pos
@@ -123,21 +129,16 @@ update msg model =
         SetData json ->
             let
                 state =
-                    case model.state of
-                        HasPosition pos ->
-                            case D.decodeValue dataDecoder json of
-                                Ok data ->
-                                    HasData data pos
+                    case D.decodeValue dataDecoder json of
+                        Ok data ->
+                            HasData data
 
-                                Err e ->
-                                    Error (D.errorToString e)
-
-                        _ ->
-                            model.state
+                        Err e ->
+                            DataError (D.errorToString e)
 
                 nextZemanIndex curTime =
                     case state of
-                        HasData data _ ->
+                        HasData data ->
                             case data.zemanimState of
                                 HasZemanim zmnm ->
                                     zmnm.zemanim
@@ -158,7 +159,7 @@ update msg model =
                             0
             in
             ( { model
-                | state = state
+                | dataState = state
                 , -- If currently showing today, set the zeman index to the next zeman for today
                   curZemanIndex =
                     if model.curTime == model.initTime then
@@ -184,9 +185,9 @@ update msg model =
                             -- Reset to initial
                             model.initTime
             in
-            case model.state of
-                HasData _ pos ->
-                    ( { model | curTime = newTime, state = HasPosition pos }
+            case model.locationState of
+                HasPosition pos ->
+                    ( { model | curTime = newTime, locationState = HasPosition pos }
                     , getData { timestamp = newTime, position = pos, settings = Settings.encode model.settings }
                     )
 
@@ -221,8 +222,8 @@ update msg model =
                             curIndex
 
                 newZemanimIndex =
-                    case model.state of
-                        HasData data _ ->
+                    case model.dataState of
+                        HasData data ->
                             case data.zemanimState of
                                 HasZemanim zmnm ->
                                     newIndex model.curZemanIndex zmnm
@@ -264,8 +265,8 @@ update msg model =
 
                 -- TODO show text
                 newShiurIndex =
-                    case model.state of
-                        HasData data _ ->
+                    case model.dataState of
+                        HasData data ->
                             newIndex model.curShiurIndex data.shiurim
 
                         _ ->
@@ -294,17 +295,16 @@ view : Model -> Html Msg
 view model =
     let
         vs =
-            case model.state of
+            case model.dataState of
                 LoadingData ->
                     [ text "Loading..." ]
 
-                Error e ->
+                DataError e ->
                     [ span [ style "color" "red" ] [ text e ] ]
 
-                HasPosition _ ->
-                    [ text "Loading..." ]
-
-                HasData data _ ->
+                -- HasPosition _ ->
+                --     [ text "Loading..." ]
+                HasData data ->
                     let
                         ( zemanimLine1, zemanimLine2, location ) =
                             case data.zemanimState of
