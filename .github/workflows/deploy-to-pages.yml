@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Nix
-        uses: cachix/install-nix-action@V28
+        uses: cachix/install-nix-action@v29
 
       - name: Checkout
         uses: actions/checkout@v4
