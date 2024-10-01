@@ -10,6 +10,7 @@ import {
 } from '@hebcal/core'
 import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
 import { Position } from './location';
+import { Settings } from './settings';
 
 /**
  * Build an instance of hebcal's GeoLocation
@@ -26,12 +27,12 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
 
 type Zeman = { name: string, value: number };
 
-const getZemanim = (hdate: HDate, pos: Position) => {
+const getZemanim = (settings: Settings, hdate: HDate, pos: Position) => {
     try {
         const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
         const erevPesachZemanim = getErevPesachZemanim(hdate, zmn);
-        const erevShabbosYtZemanim = getErevShabbosYtZemanim(hdate, gloc, zmn);
+        const erevShabbosYtZemanim = getErevShabbosYtZemanim(settings, hdate, gloc, zmn);
         const zemanim = [
             { name: 'חצות הלילה', value: zmn.chatzotNight().getTime() },
             { name: 'עלות השחר', value: zmn.sunriseOffset(-72).getTime() },
@@ -55,17 +56,10 @@ const getZemanim = (hdate: HDate, pos: Position) => {
     }
 };
 
-type Profile = 'to-w' | 'to-s' | 'mwk';
-
 /**
  * Get the candle lighting times for this date (if erev shabbos or y"t)
  */
-const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) => {
-    // Get current profile
-    const params = Object.fromEntries(
-        window.location.search.slice(1).split('&').map(pair => pair.split('='))
-    );
-    const profile: Profile = params.p || 'mwk';
+const getErevShabbosYtZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation, zmn: Zmanim) => {
     const location = new Location(
         gloc.getLatitude(),
         gloc.getLongitude(),
@@ -74,7 +68,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
     );
     const events = HebrewCalendar.calendar({
         candlelighting: true,
-        candleLightingMins: profile === 'mwk' ? 18 : 15,
+        candleLightingMins: settings.profile === 'mwk' ? 18 : 15,
         mask: flags.EREV, // Include yom tov
         start: hdate,
         end: hdate,
@@ -83,7 +77,7 @@ const getErevShabbosYtZemanim = (hdate: HDate, gloc: GeoLocation, zmn: Zmanim) =
 
     return events.reduce((acc, event) => {
         if (event instanceof CandleLightingEvent) {
-            if (profile === 'to-s') {
+            if (settings.profile === 'to-s') {
                 // Calculate plag with MG"A hours
                 // MG"A hours are 12 minutes longer than GR"A hours, and plag is 4.75 hours after chatzos
                 const mgaOffset = 4.75 * 12 * 60 * 1000;
@@ -139,11 +133,11 @@ const getShiurim = (hdate: HDate) => {
  */
 const getParsha = (hdate: HDate) => new Sedra(hdate.getFullYear()).getString(hdate, 'he-x-NoNikud');
 
-export const getData = (timestamp: number, pos: Position) => {
+export const getData = (settings: Settings, timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
 
-    const zemanim = getZemanim(hdate, pos);
+    const zemanim = getZemanim(settings, hdate, pos);
     const shiurim = getShiurim(hdate);
     const parsha = getParsha(hdate);
 
