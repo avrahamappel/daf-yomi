@@ -6,7 +6,15 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs
+          {
+            inherit system;
+            config.android_sdk.accept_license = true;
+            config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+              "android-sdk-cmdline-tools"
+              "android-sdk-tools"
+            ];
+          };
 
         elmWrapper = pkgs.writeShellScriptBin "elm" ''
           ${pkgs.elmPackages.elm}/bin/elm "$@"
@@ -21,16 +29,32 @@
 
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
+
+        # Must match the values in android/app/build.gradle
+        # and android/variables.gradle
+        buildToolsVersion = "34.0.0";
+        androidComposition = pkgs.androidenv.composeAndroidPackages {
+          buildToolsVersions = [ buildToolsVersion ];
+          platformVersions = [ "34" ];
+        };
+        androidEnvironment = rec {
+          ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
+          GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/${buildToolsVersion}/aapt2";
+        };
       in
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; with elmPackages; [
+            androidComposition.androidsdk
+            jdk
             elmWrapper
             elm2nix
             elm-language-server
             elm-format
             nodejs
           ];
+
+          env = androidEnvironment;
         };
 
         packages = {

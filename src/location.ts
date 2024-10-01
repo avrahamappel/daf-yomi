@@ -1,4 +1,5 @@
 import { Settings } from "./settings";
+import { Geolocation } from '@capacitor/geolocation';
 
 export type Position = {
     name?: string,
@@ -39,12 +40,21 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
             });
     }
 
-    // if (settings.locationMethod === 'gps') {
-    // Try geolocation (currently not working on KaiOS)
-    // if ('geolocation' in navigator) {
-    //     navigator.geolocation.watchPosition(
-    //         ({ coords }) => ob.next(geoLocation(coords)), (err) => ob.error(err)
-    //     );
-    // }
-    // }
+    if (settings.locationMethod === 'gps') {
+        Geolocation.watchPosition({}, (geoPos, err) => {
+            if (err) {
+                error(err.code ? `GPS Error ${err.code}: ${err.message}` : err.message || "Geolocation error")
+            }
+            if (!geoPos) return;
+
+            const { longitude, latitude, altitude } = geoPos.coords;
+            const pos: Position = { longitude, latitude };
+
+            if (altitude !== null) {
+                pos.altitude = altitude;
+            }
+
+            next(pos);
+        });
+    }
 };
