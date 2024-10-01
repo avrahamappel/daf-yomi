@@ -9,7 +9,7 @@ export type Position = {
 
 const STORAGE_KEY = 'app.location';
 
-export const getLocation = (settings: Settings, next: (pos: Position) => void): void => {
+export const getLocation = (settings: Settings, next: (pos: Position) => void, error: (message: string) => void): void => {
     if (settings.locationMethod === 'manual') {
         next(settings.manualPosition);
     }
@@ -33,6 +33,9 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void): 
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
                 next(position);
+            }).catch(e => {
+                error(e.message || "Could not fetch location");
+                console.error(e)
             });
     }
 

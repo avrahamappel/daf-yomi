@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Array
 import Browser
 import Data exposing (..)
+import Errors
 import Format exposing (posixToTimeString)
 import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (class, id, style)
@@ -80,6 +81,7 @@ type Msg
     | ChangeDate SwitcherMsg
     | ChangeZeman SwitcherMsg
     | ChangeShiur SwitcherMsg
+    | ReceiveError String
 
 
 dayInMillis : Int
@@ -273,6 +275,9 @@ update msg model =
             in
             ( { model | curShiurIndex = newShiurIndex }, Cmd.none )
 
+        ReceiveError error ->
+            ( { model | state = Error error }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -283,6 +288,7 @@ subscriptions _ =
     Sub.batch
         [ Location.setLocation SetLocation
         , returnData SetData
+        , Errors.receiveError ReceiveError
         ]
 
 
@@ -296,13 +302,13 @@ view model =
         vs =
             case model.state of
                 LoadingData ->
-                    [ text "Loading..." ]
+                    [ text "Fetching position..." ]
 
                 Error e ->
                     [ span [ style "color" "red" ] [ text e ] ]
 
                 HasPosition _ ->
-                    [ text "Loading..." ]
+                    [ text "Loading data..." ]
 
                 HasData data _ ->
                     let

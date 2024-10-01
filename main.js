@@ -7,7 +7,7 @@ import { getSettings } from './src/settings';
 const app = Elm.Main.init({ node: document.getElementById('app') });
 const initialSettings = getSettings();
 
-getLocation(initialSettings, (pos) => app.ports.setLocation.send(pos));
+getLocation(initialSettings, (pos) => app.ports.setLocation.send(pos), (error) => app.ports.receiveError.send(error));
 
 app.ports.getData.subscribe(({ settings, timestamp, position }) => {
     const data = getData(settings, timestamp, position);
