@@ -2,13 +2,12 @@ module Settings exposing (Settings, decode, encode)
 
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
-import Location exposing (Position)
 
 
 type LocationMethod
     = Ip
     | Gps
-    | Manual Position
+    | Manual
 
 
 type Profile
@@ -18,19 +17,22 @@ type Profile
 
 
 type alias Settings =
-    { locationMethod : LocationMethod, profile : Profile }
+    { locationMethod : LocationMethod, profile : Profile, longitude : Maybe Float, latitude : Maybe Float }
 
 
+decode : D.Value -> Settings
 decode value =
     D.decodeValue settingsDecoder value
-        |> Result.withDefault { locationMethod = Ip, profile = TorontoWinter }
+        |> Result.withDefault { locationMethod = Ip, profile = TorontoWinter, longitude = Nothing, latitude = Nothing }
 
 
 settingsDecoder : Decoder Settings
 settingsDecoder =
-    D.map2 Settings
+    D.map4 Settings
         (D.field "locationMethod" D.string |> D.andThen decodeLocationMethod)
         (D.field "profile" D.string |> D.andThen decodeProfile)
+        (D.maybe (D.field "longitude" D.float))
+        (D.maybe (D.field "latitude" D.float))
 
 
 decodeLocationMethod : String -> Decoder LocationMethod
@@ -43,12 +45,13 @@ decodeLocationMethod method =
             D.succeed Gps
 
         "manual" ->
-            Location.decodePosition |> D.map Manual
+            D.succeed Manual
 
         _ ->
             D.fail "Invalid location method"
 
 
+decodeProfile : String -> Decoder Profile
 decodeProfile profile =
     case profile of
         "to-w" ->
@@ -73,13 +76,16 @@ encode settings =
         locationMethod =
             locationMethodString settings.locationMethod
 
-        manualPosition =
-            case settings.locationMethod of
-                Manual position ->
-                    [ ( "manualPosition", Location.encodePosition position ) ]
+        manualPositionKeys =
+            [ "longitude", "latitude" ]
 
-                _ ->
-                    []
+        manualPosition =
+            [ settings.longitude
+            , settings.latitude
+            ]
+                |> List.filterMap (\x -> x)
+                |> List.map E.float
+                |> List.map2 Tuple.pair manualPositionKeys
     in
     E.object
         ([ ( "profile", E.string profile )
@@ -111,5 +117,5 @@ locationMethodString locationMethod =
         Gps ->
             "gps"
 
-        Manual _ ->
+        Manual ->
             "manual"
