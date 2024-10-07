@@ -11,7 +11,7 @@ import Html.Events exposing (onClick)
 import Json.Decode as D
 import Json.Encode
 import Location exposing (Position)
-import Settings exposing (Settings)
+import Settings exposing (Settings, update, view)
 import Task
 import Time exposing (Posix, Weekday(..), Zone)
 
@@ -24,6 +24,9 @@ port getData : { settings : Json.Encode.Value, timestamp : Int, position : Posit
 
 
 port returnData : (Json.Encode.Value -> msg) -> Sub msg
+
+
+port storeSettings : Json.Encode.Value -> Cmd msg
 
 
 
@@ -50,9 +53,15 @@ type alias Model =
     , curZemanIndex : Int
     , initTime : Int
     , timezone : Zone
+    , page : Page
     , state : State
     , settings : Settings
     }
+
+
+type Page
+    = Main
+    | Settings
 
 
 type State
@@ -69,6 +78,7 @@ init value =
       , curZemanIndex = 0
       , initTime = 0
       , timezone = Time.utc
+      , page = Main
       , state = LoadingData
       , settings = Settings.decode value
       }
@@ -89,6 +99,10 @@ type Msg
     | ChangeZeman SwitcherMsg
     | ChangeShiur SwitcherMsg
     | ReceiveError String
+    | OpenSettings
+    | CloseSettings
+    | UpdateSettings Settings.Msg
+    | SaveSettings
 
 
 dayInMillis : Int
@@ -285,6 +299,33 @@ update msg model =
         ReceiveError error ->
             ( { model | state = Error error }, Cmd.none )
 
+        OpenSettings ->
+            ( { model | page = Settings }, Cmd.none )
+
+        CloseSettings ->
+            ( { model | page = Main }, Cmd.none )
+
+        UpdateSettings m ->
+            ( { model
+                | settings =
+                    Settings.update m model.settings
+              }
+            , Cmd.none
+            )
+
+        SaveSettings ->
+            let
+                settingsJson =
+                    Settings.encode model.settings
+
+                cmd =
+                    Cmd.batch
+                        [ Location.getLocation settingsJson
+                        , storeSettings settingsJson
+                        ]
+            in
+            ( { model | page = Main }, cmd )
+
 
 
 -- SUBSCRIPTIONS
@@ -306,7 +347,7 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     let
-        vs =
+        mainView =
             case model.state of
                 LoadingData ->
                     [ text "Fetching position..." ]
@@ -393,6 +434,23 @@ view model =
                     , br [] []
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
                     , div [ class "sub-text" ] [ text location ]
+                    ]
+
+        vs =
+            case model.page of
+                Main ->
+                    mainView
+                        ++ [ br [] []
+                           , br [] []
+                           , br [] []
+                           , button [ onClick OpenSettings ] [ text "Settings" ]
+                           ]
+
+                Settings ->
+                    [ Html.map UpdateSettings (Settings.view model.settings)
+                    , br [] []
+                    , button [ onClick SaveSettings ] [ text "Save" ]
+                    , button [ onClick CloseSettings ] [ text "Close" ]
                     ]
     in
     div [ id "app" ] vs
