@@ -2,11 +2,18 @@ port module Location exposing
     ( Position
     , decodePosition
     , encodePosition
+    , getLocation
     , setLocation
     )
 
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E exposing (Value)
+
+
+{-| Trigger a reload of location.
+The argument should be a serialized Settings object
+-}
+port getLocation : Value -> Cmd msg
 
 
 port setLocation : (Value -> msg) -> Sub msg

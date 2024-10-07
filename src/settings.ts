@@ -1,5 +1,3 @@
-import { Position } from "./location";
-
 type Profile = 'to-w' | 'to-s' | 'mwk';
 
 type BaseSettings = {
@@ -8,9 +6,12 @@ type BaseSettings = {
 
 export type Settings = BaseSettings & ({
     locationMethod: 'ip' | 'gps';
+    longitude?: number;
+    latitude?: number;
 } | {
     locationMethod: 'manual',
-    manualPosition: Position,
+    longitude: number;
+    latitude: number;
 })
 
 const STORAGE_KEY = 'app.settings';
