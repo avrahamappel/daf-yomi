@@ -72,7 +72,7 @@ type State
 
 
 init : Json.Encode.Value -> ( Model, Cmd Msg )
-init value =
+init settings =
     ( { curTime = 0
       , curShiurIndex = 0
       , curZemanIndex = 0
@@ -80,7 +80,7 @@ init value =
       , timezone = Time.utc
       , page = Main
       , state = LoadingData
-      , settings = Settings.decode value
+      , settings = Settings.decode settings
       }
     , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
     )

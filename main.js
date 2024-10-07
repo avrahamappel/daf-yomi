@@ -4,7 +4,11 @@ import { getData } from './src/data'
 import { getLocation } from './src/location'
 import { getSettings, updateSettings } from './src/settings';
 
-const app = Elm.Main.init({ node: document.getElementById('app') });
+const initialSettings = getSettings();
+const app = Elm.Main.init({
+    node: document.getElementById('app'),
+    flags: initialSettings,
+});
 
 const sendLocationToElm = (settings) => getLocation(
     settings,
@@ -18,8 +22,7 @@ app.ports.getData.subscribe(({ settings, timestamp, position }) => {
 })
 
 // If location method changes, app will re-request location
-app.ports.getLocation.subscribe(settings => sendLocationToElm(settings));
+app.ports.getLocation.subscribe(sendLocationToElm);
 app.ports.storeSettings.subscribe(updateSettings)
 
-const initialSettings = getSettings();
 sendLocationToElm(initialSettings);
