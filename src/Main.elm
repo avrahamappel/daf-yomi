@@ -3,7 +3,6 @@ port module Main exposing (..)
 import Array
 import Browser
 import Data exposing (..)
-import Errors
 import Format exposing (posixToTimeString)
 import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (class, id, style)
@@ -27,6 +26,9 @@ port returnData : (Json.Encode.Value -> msg) -> Sub msg
 
 
 port storeSettings : Json.Encode.Value -> Cmd msg
+
+
+port receiveError : (String -> msg) -> Sub msg
 
 
 
@@ -336,7 +338,7 @@ subscriptions _ =
     Sub.batch
         [ Location.setLocation SetLocation
         , returnData SetData
-        , Errors.receiveError ReceiveError
+        , receiveError ReceiveError
         ]
 
 
