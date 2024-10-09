@@ -130,7 +130,13 @@ update msg model =
                 curTime =
                     Time.posixToMillis pos
             in
-            ( { model | initTime = curTime, curTime = curTime, timezone = tz }
+            ( { model
+                | initTime = curTime
+                , curTime = curTime
+                , timezone = tz
+                , -- If the data is loaded, this will bump the currently shown zeman to the next chronological one
+                  curZemanIndex = nextZemanIndex model.state curTime
+              }
             , Cmd.none
             )
 
