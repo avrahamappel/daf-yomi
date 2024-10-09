@@ -111,6 +111,7 @@ type Msg
     | CloseSettings
     | UpdateSettings Settings.Msg
     | SaveSettings
+    | UpdateTime Posix
 
 
 dayInMillis : Int
@@ -312,6 +313,9 @@ update msg model =
             in
             ( { model | page = Main }, cmd )
 
+        UpdateTime _ ->
+            ( model, getCurrentZoneAndTime )
+
 
 {-| Figure out what the next zeman for the current time is
 -}
@@ -349,6 +353,9 @@ subscriptions _ =
         [ Location.setLocation SetLocation
         , returnData SetData
         , receiveError ReceiveError
+        , -- Update the time every minute
+          -- More often would be too jarring for the displayed zeman to suddenly flip
+          Time.every (1000 * 60) UpdateTime
         ]
 
 
