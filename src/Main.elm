@@ -159,35 +159,13 @@ update msg model =
 
                         _ ->
                             model.state
-
-                nextZemanIndex curTime =
-                    case state of
-                        HasData data _ ->
-                            case data.zemanimState of
-                                HasZemanim zmnm ->
-                                    zmnm.zemanim
-                                        |> Array.indexedMap Tuple.pair
-                                        |> Array.filter
-                                            (\( _, zn ) ->
-                                                Time.posixToMillis zn.value >= curTime
-                                            )
-                                        |> Array.map Tuple.first
-                                        |> Array.toList
-                                        |> List.head
-                                        |> Maybe.withDefault 0
-
-                                _ ->
-                                    0
-
-                        _ ->
-                            0
             in
             ( { model
                 | state = state
                 , -- If currently showing today, set the zeman index to the next zeman for today
                   curZemanIndex =
                     if model.curTime == model.initTime then
-                        nextZemanIndex model.curTime
+                        nextZemanIndex state model.curTime
 
                     else
                         model.curZemanIndex
@@ -243,7 +221,7 @@ update msg model =
                                 index
 
                         Middle ->
-                            curIndex
+                            nextZemanIndex model.state model.curTime
 
                 newZemanimIndex =
                     case model.state of
@@ -327,6 +305,32 @@ update msg model =
                         ]
             in
             ( { model | page = Main }, cmd )
+
+
+{-| Figure out what the next zeman for the current time is
+-}
+nextZemanIndex : State -> Int -> Int
+nextZemanIndex state curTime =
+    case state of
+        HasData data _ ->
+            case data.zemanimState of
+                HasZemanim zmnm ->
+                    zmnm.zemanim
+                        |> Array.indexedMap Tuple.pair
+                        |> Array.filter
+                            (\( _, zn ) ->
+                                Time.posixToMillis zn.value >= curTime
+                            )
+                        |> Array.map Tuple.first
+                        |> Array.toList
+                        |> List.head
+                        |> Maybe.withDefault 0
+
+                _ ->
+                    0
+
+        _ ->
+            0
 
 
 
