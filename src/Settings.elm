@@ -216,6 +216,7 @@ view settings =
 
             _ ->
                 text ""
+        , br [] []
         , div []
             [ text "Profile:"
             , div []
