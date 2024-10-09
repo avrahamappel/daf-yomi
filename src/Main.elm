@@ -84,8 +84,14 @@ init settings =
       , state = LoadingData
       , settings = Settings.decode settings
       }
-    , Task.map2 AdjustTime Time.here Time.now |> Task.perform (\x -> x)
+    , getCurrentZoneAndTime
     )
+
+
+getCurrentZoneAndTime : Cmd Msg
+getCurrentZoneAndTime =
+    Task.map2 AdjustTime Time.here Time.now
+        |> Task.perform (\x -> x)
 
 
 
