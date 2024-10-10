@@ -127,16 +127,17 @@ update msg model =
 
         AdjustTime tz pos ->
             let
-                curTime =
+                initTime =
                     Time.posixToMillis pos
+
+                curTime =
+                    if model.curTime == 0 then
+                        initTime
+
+                    else
+                        model.curTime
             in
-            ( { model
-                | initTime = curTime
-                , curTime = curTime
-                , timezone = tz
-                , -- If the data is loaded, this will bump the currently shown zeman to the next chronological one
-                  curZemanIndex = nextZemanIndex model.state curTime
-              }
+            ( { model | initTime = initTime, curTime = curTime, timezone = tz }
             , Cmd.none
             )
 
@@ -178,7 +179,7 @@ update msg model =
                 , -- If currently showing today, set the zeman index to the next zeman for today
                   curZemanIndex =
                     if model.curTime == model.initTime then
-                        nextZemanIndex state model.curTime
+                        upcomingZemanIndex state model.curTime
 
                     else
                         model.curZemanIndex
@@ -234,7 +235,7 @@ update msg model =
                                 index
 
                         Middle ->
-                            nextZemanIndex model.state model.curTime
+                            upcomingZemanIndex model.state model.curTime
 
                 newZemanimIndex =
                     case model.state of
@@ -323,10 +324,10 @@ update msg model =
             ( model, getCurrentZoneAndTime )
 
 
-{-| Figure out what the next zeman for the current time is
+{-| Figure out what the next upcoming zeman for the current time is
 -}
-nextZemanIndex : State -> Int -> Int
-nextZemanIndex state curTime =
+upcomingZemanIndex : State -> Int -> Int
+upcomingZemanIndex state curTime =
     case state of
         HasData data _ ->
             case data.zemanimState of
