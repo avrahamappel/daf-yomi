@@ -10,7 +10,10 @@ npm update
 
 # Rebuild elm nix manifests
 elm2nix convert > elm-srcs.nix
-elm2nix snapshot
+# Only write new registry.dat if dependencies changed
+if [[ "$(git diff --name-only)" =~ elm-srcs.nix ]]; then
+  elm2nix snapshot
+fi
 
 # Update NPM deps hash if necessary
 if ! output="$(nix build --no-link |& tee /dev/tty)"; then
