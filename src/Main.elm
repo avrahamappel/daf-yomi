@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Array
 import Browser
 import Data exposing (..)
+import DateFormat
 import Format exposing (posixToTimeString)
 import Html exposing (Html, br, button, div, span, text)
 import Html.Attributes exposing (class, id, style)
@@ -53,7 +54,7 @@ type alias Model =
     { curTime : Int
     , curShiurIndex : Int
     , curZemanIndex : Int
-    , initTime : Int
+    , dispTime : Int
     , timezone : Zone
     , page : Page
     , state : State
@@ -78,7 +79,7 @@ init settings =
     ( { curTime = 0
       , curShiurIndex = 0
       , curZemanIndex = 0
-      , initTime = 0
+      , dispTime = 0
       , timezone = Time.utc
       , page = Main
       , state = LoadingData
@@ -127,17 +128,17 @@ update msg model =
 
         AdjustTime tz pos ->
             let
-                initTime =
+                curTime =
                     Time.posixToMillis pos
 
-                curTime =
-                    if model.curTime == 0 then
-                        initTime
+                dispTime =
+                    if model.dispTime == 0 then
+                        curTime
 
                     else
-                        model.curTime
+                        model.dispTime
             in
-            ( { model | initTime = initTime, curTime = curTime, timezone = tz }
+            ( { model | dispTime = dispTime, curTime = curTime, timezone = tz }
             , Cmd.none
             )
 
@@ -153,7 +154,7 @@ update msg model =
                 Ok pos ->
                     ( { model | state = HasPosition pos }
                     , getData
-                        { timestamp = model.curTime
+                        { timestamp = model.dispTime
                         , position = pos
                         , settings = Settings.encode model.settings
                         }
@@ -173,12 +174,23 @@ update msg model =
 
                         _ ->
                             model.state
+
+                asDate =
+                    DateFormat.format
+                        [ DateFormat.yearNumber
+                        , DateFormat.dayOfYearNumber
+                        ]
+                        model.timezone
+                        << Time.millisToPosix
+
+                isDisplayingCurrentDate =
+                    asDate model.curTime == asDate model.dispTime
             in
             ( { model
                 | state = state
                 , -- If currently showing today, set the zeman index to the next zeman for today
                   curZemanIndex =
-                    if model.curTime == model.initTime then
+                    if isDisplayingCurrentDate then
                         upcomingZemanIndex state model.curTime
 
                     else
@@ -192,18 +204,18 @@ update msg model =
                 newTime =
                     case switchMsg of
                         Right ->
-                            model.curTime + dayInMillis
+                            model.dispTime + dayInMillis
 
                         Left ->
-                            model.curTime - dayInMillis
+                            model.dispTime - dayInMillis
 
                         Middle ->
                             -- Reset to initial
-                            model.initTime
+                            model.curTime
             in
             case model.state of
                 HasData _ pos ->
-                    ( { model | curTime = newTime, state = HasPosition pos }
+                    ( { model | dispTime = newTime, state = HasPosition pos }
                     , getData { timestamp = newTime, position = pos, settings = Settings.encode model.settings }
                     )
 
@@ -454,7 +466,7 @@ view model =
                                 Just parsha ->
                                     weekday ++ " " ++ parsha
                     in
-                    [ switcher data.hdate (weekAndDay model.timezone model.curTime) ChangeDate
+                    [ switcher data.hdate (weekAndDay model.timezone model.dispTime) ChangeDate
                     , div [ class "sub-text" ] [ text data.date ]
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
                     , br [] []
