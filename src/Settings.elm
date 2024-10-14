@@ -190,26 +190,33 @@ view settings =
             ]
         , case settings.locationMethod of
             Manual ->
+                let
+                    maybeValue =
+                        Maybe.map (String.fromFloat >> value >> List.singleton)
+                            >> Maybe.withDefault []
+                in
                 div []
                     [ label []
                         [ text "Longitude: "
                         , input
-                            [ placeholder "75.000"
-                            , type_ "number"
-                            , value (settings.longitude |> Maybe.map String.fromFloat |> Maybe.withDefault "")
-                            , onInput UpdateLongitude
-                            ]
+                            ([ placeholder "75.000"
+                             , type_ "number"
+                             , onInput UpdateLongitude
+                             ]
+                                ++ maybeValue settings.longitude
+                            )
                             []
                         ]
                     , br [] []
                     , label []
                         [ text "Latitude: "
                         , input
-                            [ placeholder "45.000"
-                            , type_ "number"
-                            , value (settings.latitude |> Maybe.map String.fromFloat |> Maybe.withDefault "")
-                            , onInput UpdateLatitude
-                            ]
+                            ([ placeholder "45.000"
+                             , type_ "number"
+                             , onInput UpdateLatitude
+                             ]
+                                ++ maybeValue settings.latitude
+                            )
                             []
                         ]
                     ]
