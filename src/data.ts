@@ -15,7 +15,7 @@ import { Settings } from './settings';
 /**
  * Build an instance of hebcal's GeoLocation
  */
-const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
+const getGeoLocation = ({ latitude, longitude, name, altitude }: Position) =>
     new GeoLocation(
         name || null,
         latitude,
@@ -25,11 +25,17 @@ const geoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         'Utc'
     );
 
+const getLocation = (gloc: GeoLocation) => new Location(
+    gloc.getLatitude(),
+    gloc.getLongitude(),
+    false,
+    gloc.getTimeZone()
+);
+
 type Zeman = { name: string, value: number };
 
-const getZemanim = (settings: Settings, hdate: HDate, pos: Position) => {
+const getZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation) => {
     try {
-        const gloc = geoLocation(pos);
         const zmn = new Zmanim(gloc, hdate);
         const erevPesachZemanim = getErevPesachZemanim(hdate, zmn);
         const erevShabbosYtZemanim = getErevShabbosYtZemanim(settings, hdate, gloc, zmn);
@@ -38,8 +44,8 @@ const getZemanim = (settings: Settings, hdate: HDate, pos: Position) => {
             { name: 'עלות השחר', value: zmn.sunriseOffset(-72).getTime() },
             { name: 'הנץ החמה', value: zmn.neitzHaChama().getTime() },
             { name: 'סו״ז קריאת שמע', value: zmn.sofZmanShmaMGA().getTime() },
-            { name: 'סו״ז תפילה (גר"א)', value: zmn.sofZmanTfilla().getTime() },
             ...erevPesachZemanim,
+            { name: 'סו״ז תפילה (גר"א)', value: zmn.sofZmanTfilla().getTime() },
             { name: 'חצות היום', value: zmn.chatzot().getTime() },
             { name: 'מנחה קטנה', value: zmn.minchaKetanaMGA().getTime() },
             ...erevShabbosYtZemanim,
@@ -62,19 +68,13 @@ const getZemanim = (settings: Settings, hdate: HDate, pos: Position) => {
  * Get the candle lighting times for this date (if erev shabbos or y"t)
  */
 const getErevShabbosYtZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation, zmn: Zmanim) => {
-    const location = new Location(
-        gloc.getLatitude(),
-        gloc.getLongitude(),
-        false,
-        gloc.getTimeZone()
-    );
     const events = HebrewCalendar.calendar({
         candlelighting: true,
         candleLightingMins: settings.profile === 'mwk' ? 18 : 15,
         mask: flags.EREV, // Include yom tov
         start: hdate,
         end: hdate,
-        location,
+        location: getLocation(gloc),
     });
 
     return events.reduce((acc, event) => {
@@ -133,15 +133,43 @@ const getShiurim = (hdate: HDate) => {
 /**
  * Get the parsha of the week
  */
-const getParsha = (hdate: HDate) => new Sedra(hdate.getFullYear()).getString(hdate, 'he-x-NoNikud');
+const getParsha = (hdate: HDate, gloc: GeoLocation): string => {
+    const chagEvents = HebrewCalendar.calendar({
+        mask: flags.EREV
+            | flags.CHAG
+            | flags.CHOL_HAMOED
+            | flags.SHABBAT_MEVARCHIM
+            | flags.ROSH_CHODESH
+            | flags.CHANUKAH_CANDLES
+            | flags.MAJOR_FAST
+            | flags.MINOR_FAST
+            | flags.SPECIAL_SHABBAT
+            | flags.MINOR_HOLIDAY
+            | flags.OMER_COUNT
+        ,
+        start: hdate,
+        end: hdate,
+        location: getLocation(gloc),
+    })
+    const chagStrs = chagEvents.map(ev => ev.render('he-x-NoNikud'));
+
+    const sedra = new Sedra(hdate.getFullYear());
+    if (sedra.isParsha(hdate)) {
+        const parsha = sedra.getString(hdate, 'he-x-NoNikud');
+        chagStrs.unshift(parsha);
+    }
+
+    return chagStrs.join(', ');
+};
 
 export const getData = (settings: Settings, timestamp: number, pos: Position) => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
+    const gloc = getGeoLocation(pos);
 
-    const zemanim = getZemanim(settings, hdate, pos);
+    const zemanim = getZemanim(settings, hdate, gloc);
     const shiurim = getShiurim(hdate);
-    const parsha = getParsha(hdate);
+    const parsha = getParsha(hdate, gloc);
 
     return {
         date: date.toDateString(),

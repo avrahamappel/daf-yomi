@@ -10,7 +10,7 @@ type alias Data =
     , hdate : String
     , zemanimState : ZemanimState
     , shiurim : Shiurim
-    , parsha : Maybe String
+    , parsha : String
     }
 
 
@@ -21,7 +21,7 @@ dataDecoder =
         (D.field "hdate" D.string)
         (D.field "zemanim" zemanimStateDecoder)
         (D.field "shiurim" shiurimDecoder)
-        (D.field "parsha" (D.nullable D.string))
+        (D.field "parsha" D.string)
 
 
 type ZemanimState

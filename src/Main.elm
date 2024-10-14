@@ -454,17 +454,12 @@ view model =
                                             "יום ה׳"
 
                                         Fri ->
-                                            "יום ו׳"
+                                            "ע״ש"
 
                                         Sat ->
                                             "ש״ק"
                             in
-                            case data.parsha of
-                                Nothing ->
-                                    weekday
-
-                                Just parsha ->
-                                    weekday ++ " " ++ parsha
+                            weekday ++ " " ++ data.parsha
                     in
                     [ switcher data.hdate (weekAndDay model.timezone model.dispTime) ChangeDate
                     , div [ class "sub-text" ] [ text data.date ]
