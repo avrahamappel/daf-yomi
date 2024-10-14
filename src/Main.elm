@@ -131,8 +131,17 @@ update msg model =
                 curTime =
                     Time.posixToMillis pos
 
+                getHour =
+                    Time.toHour tz << Time.millisToPosix
+
                 dispTime =
                     if model.dispTime == 0 then
+                        curTime
+
+                    else if getHour model.dispTime == 23 && getHour curTime == 0 && abs (curTime - model.dispTime) <= (23 * 60 * 60 * 1000) then
+                        -- if day just changed, meaning the previous hour was 11pm and new hour is 12am
+                        -- (and the new time is less than 23 hours ahead/behind the old time),
+                        -- use new time for dispTime as well
                         curTime
 
                     else
