@@ -128,26 +128,49 @@ update msg model =
 
         AdjustTime tz pos ->
             let
-                curTime =
+                newTime =
                     Time.posixToMillis pos
 
-                getHour =
-                    Time.toHour tz << Time.millisToPosix
+                newTimeIsWithin3DaysOfDispTime =
+                    abs (newTime - model.dispTime) <= (3 * 24 * 60 * 60 * 1000)
 
                 dispTime =
                     if model.dispTime == 0 then
-                        curTime
+                        -- dispTime has never been set
+                        newTime
 
-                    else if getHour model.dispTime == 23 && getHour curTime == 0 && abs (curTime - model.dispTime) <= (23 * 60 * 60 * 1000) then
-                        -- if day just changed, meaning the previous hour was 11pm and new hour is 12am
-                        -- (and the new time is less than 23 hours ahead/behind the old time),
-                        -- use new time for dispTime as well
-                        curTime
+                    else if newTimeIsWithin3DaysOfDispTime then
+                        -- if the date we are viewing is less than three days
+                        -- away from the current date, use new time
+                        -- for dispTime as well
+                        newTime
 
                     else
                         model.dispTime
+
+                isViewingCurrentZeman =
+                    upcomingZemanIndex model.state model.dispTime
+                        == model.curZemanIndex
+
+                newZemanimIndex =
+                    upcomingZemanIndex model.state newTime
+
+                zemanIndex =
+                    if
+                        newTimeIsWithin3DaysOfDispTime
+                            && isViewingCurrentZeman
+                    then
+                        newZemanimIndex
+
+                    else
+                        model.curZemanIndex
             in
-            ( { model | dispTime = dispTime, curTime = curTime, timezone = tz }
+            ( { model
+                | dispTime = dispTime
+                , curTime = newTime
+                , timezone = tz
+                , curZemanIndex = zemanIndex
+              }
             , Cmd.none
             )
 
