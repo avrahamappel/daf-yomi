@@ -20,7 +20,7 @@
     "@capacitor/android": "^6.1.0",
     "@capacitor/core": "^6.1.0",
     "@capacitor/geolocation": "^6.0.0",
-    "@hebcal/core": "^5.7.2",
+    "@hebcal/core": "^5.8.0",
     "@hebcal/learning": "^5.0.2",
     "temporal-polyfill": "^0.2.1"
   }
