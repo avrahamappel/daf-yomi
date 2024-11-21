@@ -78,6 +78,37 @@
           githubPages = self.packages.${system}.default.overrideAttrs {
             npmBuildFlags = [ "--" "--base" "/daf-yomi" ];
           };
+
+          androidApk = pkgs.stdenv.mkDerivation rec {
+            pname = "daf-yomi-apk";
+            inherit (packageJson) version;
+
+            src = ./.;
+
+            nativeBuildInputs = [
+              pkgs.cordova
+              androidComposition.androidsdk
+            ];
+
+            env = androidEnvironment // { CI = "1"; };
+
+            patchPhase = ''
+              sed -i 's/version=".*"/version="${version}"/' config.xml
+            '';
+
+            buildPhase = ''
+              export HOME=. # Cordova attempts to write to ~/.config
+              cp -r ${self.packages.${system}.default}/dist www/
+              cordova platform add android
+              cordova build android
+            '';
+
+            installPhase = ''
+              mkdir -p $out/bin
+              cp platforms/android/app/build/outputs/apk/debug/app-debug.apk \
+                $out/bin/com.dafyomi.app.apk
+            '';
+          };
         };
       }
     );
