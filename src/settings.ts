@@ -1,7 +1,6 @@
-type Profile = 'to-w' | 'to-s' | 'mwk';
-
 type BaseSettings = {
-    profile: Profile,
+    candleLightingMinutes: number;
+    showPlag: boolean;
 }
 
 export type Settings = BaseSettings & ({

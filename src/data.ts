@@ -70,7 +70,7 @@ const getZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation) => {
 const getErevShabbosYtZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation, zmn: Zmanim) => {
     const events = HebrewCalendar.calendar({
         candlelighting: true,
-        candleLightingMins: settings.profile === 'mwk' ? 18 : 15,
+        candleLightingMins: settings.candleLightingMinutes,
         mask: flags.EREV, // Include yom tov
         start: hdate,
         end: hdate,
@@ -79,13 +79,13 @@ const getErevShabbosYtZemanim = (settings: Settings, hdate: HDate, gloc: GeoLoca
 
     return events.reduce((acc, event) => {
         if (event instanceof CandleLightingEvent) {
-            if (settings.profile === 'to-s') {
+            if (settings.showPlag) {
                 // Calculate plag with MG"A hours
                 // MG"A hours are 12 minutes longer than GR"A hours, and plag is 4.75 hours after chatzos
                 const mgaOffset = 4.75 * 12 * 60 * 1000;
                 const mgaPlag = zmn.plagHaMincha().getTime() + mgaOffset;
                 // mincha is 40 minutes earlier
-                acc.push({ name: 'מנחה מוקדמת', value: mgaPlag - (40 * 60 * 1000) });
+                // acc.push({ name: 'מנחה מוקדמת', value: mgaPlag - (40 * 60 * 1000) });
                 acc.push({ name: 'פלג המנחה', value: mgaPlag });
             }
             acc.push({ name: 'הדלקת נרות', value: event.eventTime.getTime() });
