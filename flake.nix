@@ -63,7 +63,7 @@
             pname = packageJson.name;
             version = packageJson.version;
             src = ./.;
-            npmDepsHash = "sha256-tek2w9qKvliGe6G4jPJfGP1oA99Ft3N/hqdPQXrrHtk=";
+            npmDepsHash = "sha256-TTz+zIrEVtOZpfahd/OK1EZmjPUPSbIKcbzBND6w92U=";
             nativeBuildInputs = with pkgs; [ elmPackages.elm ];
             configurePhase = pkgs.elmPackages.fetchElmDeps {
               elmPackages = import ./elm-srcs.nix;
