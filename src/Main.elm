@@ -508,14 +508,14 @@ view model =
                         ++ [ br [] []
                            , br [] []
                            , br [] []
-                           , button [ onClick OpenSettings ] [ text "Settings" ]
+                           , button [ class "ctl-button", onClick OpenSettings ] [ text "Settings" ]
                            ]
 
                 Settings ->
                     [ Html.map UpdateSettings (Settings.view model.settings)
                     , br [] []
-                    , button [ onClick SaveSettings ] [ text "Save" ]
-                    , button [ onClick CloseSettings ] [ text "Close" ]
+                    , button [ class "ctl-button", onClick SaveSettings ] [ text "Save" ]
+                    , button [ class "ctl-button", onClick CloseSettings ] [ text "Close" ]
                     ]
     in
     div [ id "app" ] vs

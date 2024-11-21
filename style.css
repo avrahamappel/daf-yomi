@@ -1,68 +1,73 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
 }
+
 a:hover {
-  color: #535bf2;
+    color: #535bf2;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-height: 100vh;
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-height: 100vh;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+    font-size: 3.2em;
+    line-height: 1.1;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 13vw;
-  text-align: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 13vw;
+    text-align: center;
 }
 
 .logo {
-  height: 6em;
-  will-change: filter;
-  transition: filter 300ms;
-  max-width: 100vw;
+    height: 6em;
+    will-change: filter;
+    transition: filter 300ms;
+    max-width: 100vw;
 }
 
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
 }
 
 button {
-  border-color: rgba(255, 255, 255, 0.87);
-  border-radius: 0;
-  background-color: #242424;
-  background-image: none;
-  color: rgba(255, 255, 255, 0.87);
-  cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.87);
+    border-radius: 0;
+    background-color: #242424;
+    background-image: none;
+    color: rgba(255, 255, 255, 0.87);
+    cursor: pointer;
+}
+
+.ctl-button {
+    padding: 0.25em 1em;
 }
 
 .switcher-group {
@@ -72,21 +77,18 @@ button {
 }
 
 .switcher-left {
-    border: 1px solid;
     border-right: 0;
     border-top-left-radius: 1em;
     border-bottom-left-radius: 1em;
 }
 
 .switcher-right {
-    border: 1px solid;
     border-left: 0;
     border-top-right-radius: 1em;
     border-bottom-right-radius: 1em;
 }
 
 .switcher-middle {
-    border: 1px solid;
     border-right: 0;
     border-left: 0;
     padding: 0 1em;
