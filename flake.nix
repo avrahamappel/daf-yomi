@@ -30,15 +30,14 @@
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
 
-        # Must match the values in android/app/build.gradle
-        # and android/variables.gradle
         buildToolsVersion = "34.0.0";
         androidComposition = pkgs.androidenv.composeAndroidPackages {
           buildToolsVersions = [ buildToolsVersion ];
           platformVersions = [ "34" ];
         };
         androidEnvironment = rec {
-          ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
+          ANDROID_HOME = "${androidComposition.androidsdk}/libexec/android-sdk";
+          ANDROID_SDK_ROOT = ANDROID_HOME;
           GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/${buildToolsVersion}/aapt2";
         };
       in
@@ -52,6 +51,8 @@
             elm-language-server
             elm-format
             nodejs
+            cordova
+            gradle
           ];
 
           env = androidEnvironment;
