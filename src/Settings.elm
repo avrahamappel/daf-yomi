@@ -8,7 +8,7 @@ module Settings exposing
     )
 
 import Html exposing (Html, br, div, h1, input, label, option, select, text)
-import Html.Attributes exposing (checked, placeholder, selected, style, type_, value)
+import Html.Attributes exposing (checked, for, name, placeholder, selected, style, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
@@ -188,29 +188,27 @@ view settings =
                             >> Maybe.withDefault []
                 in
                 div []
-                    [ label []
-                        [ text "Longitude: "
-                        , input
-                            ([ placeholder "75.000"
-                             , type_ "number"
-                             , onInput UpdateLongitude
-                             ]
-                                ++ maybeValue settings.longitude
-                            )
-                            []
-                        ]
+                    [ label [ for "longitude" ] [ text "Longitude: " ]
+                    , input
+                        ([ placeholder "75.000"
+                         , type_ "number"
+                         , name "longitude"
+                         , onInput UpdateLongitude
+                         ]
+                            ++ maybeValue settings.longitude
+                        )
+                        []
                     , br [] []
-                    , label []
-                        [ text "Latitude: "
-                        , input
-                            ([ placeholder "45.000"
-                             , type_ "number"
-                             , onInput UpdateLatitude
-                             ]
-                                ++ maybeValue settings.latitude
-                            )
-                            []
-                        ]
+                    , label [ for "latitude" ] [ text "Latitude: " ]
+                    , input
+                        ([ placeholder "45.000"
+                         , type_ "number"
+                         , name "latitude"
+                         , onInput UpdateLatitude
+                         ]
+                            ++ maybeValue settings.latitude
+                        )
+                        []
                     ]
 
             _ ->

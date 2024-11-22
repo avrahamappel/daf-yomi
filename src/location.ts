@@ -12,8 +12,10 @@ const STORAGE_KEY = 'app.location';
 
 export const getLocation = (settings: Settings, next: (pos: Position) => void, error: (message: string) => void): void => {
     if (settings.locationMethod === 'manual') {
-        const { latitude, longitude } = settings;
-        next({ latitude, longitude });
+        next({
+            latitude: settings.latitude || 0,
+            longitude: settings.longitude || 0,
+        });
     }
 
     if (settings.locationMethod === 'ip') {

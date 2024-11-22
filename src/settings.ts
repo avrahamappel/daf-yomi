@@ -1,17 +1,11 @@
-type BaseSettings = {
+export type Settings = {
+    locationMethod: 'ip' | 'gps' | 'manual',
+    longitude?: number;
+    latitude?: number;
+    elevation?: number;
     candleLightingMinutes: number;
     showPlag: boolean;
 }
-
-export type Settings = BaseSettings & ({
-    locationMethod: 'ip' | 'gps';
-    longitude?: number;
-    latitude?: number;
-} | {
-    locationMethod: 'manual',
-    longitude: number;
-    latitude: number;
-})
 
 const STORAGE_KEY = 'app.settings';
 
@@ -19,17 +13,7 @@ const STORAGE_KEY = 'app.settings';
  * Get cached settings or default
  */
 export const getSettings = (): Settings => {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-
-    if (!('locationMethod' in stored)) {
-        stored.locationMethod = 'ip';
-    }
-
-    if (!('profile' in stored)) {
-        stored.profile = 'to-w';
-    }
-
-    return stored;
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
 }
 
 /**
