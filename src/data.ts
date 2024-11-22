@@ -25,12 +25,16 @@ const getGeoLocation = ({ latitude, longitude, name, altitude }: Position) =>
         'Utc'
     );
 
-const getLocation = (gloc: GeoLocation) => new Location(
-    gloc.getLatitude(),
-    gloc.getLongitude(),
-    false,
-    gloc.getTimeZone()
-);
+const getLocation = (gloc: GeoLocation) => {
+    const location = new Location(
+        gloc.getLatitude(),
+        gloc.getLongitude(),
+        false,
+        gloc.getTimeZone()
+    );
+    location.setElevation(gloc.getElevation());
+    return location;
+};
 
 type Zeman = { name: string, value: number };
 

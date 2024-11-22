@@ -15,6 +15,7 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
         next({
             latitude: settings.latitude || 0,
             longitude: settings.longitude || 0,
+            altitude: settings.elevation
         });
     }
 

@@ -24,6 +24,7 @@ type alias Settings =
     { locationMethod : LocationMethod
     , longitude : Maybe Float
     , latitude : Maybe Float
+    , elevation : Maybe Float
     , candleLightingMinutes : Int
     , showPlag : Bool
     }
@@ -36,6 +37,7 @@ decode value =
             { locationMethod = Ip
             , longitude = Nothing
             , latitude = Nothing
+            , elevation = Nothing
             , candleLightingMinutes = 15
             , showPlag = False
             }
@@ -43,10 +45,11 @@ decode value =
 
 settingsDecoder : Decoder Settings
 settingsDecoder =
-    D.map5 Settings
+    D.map6 Settings
         (D.field "locationMethod" D.string |> D.andThen decodeLocationMethod)
         (D.maybe (D.field "longitude" D.float))
         (D.maybe (D.field "latitude" D.float))
+        (D.maybe (D.field "elevation" D.float))
         (D.field "candleLightingMinutes" D.int)
         (D.field "showPlag" D.bool)
 
@@ -115,6 +118,7 @@ type Msg
     = UpdateLocationMethod LocationMethod
     | UpdateLongitude String
     | UpdateLatitude String
+    | UpdateElevation String
     | UpdateCandleLightingMinutes String
     | UpdateShowPlag Bool
 
@@ -130,6 +134,9 @@ update msg settings =
 
         UpdateLatitude latitudeStr ->
             { settings | latitude = String.toFloat latitudeStr }
+
+        UpdateElevation elevationStr ->
+            { settings | elevation = String.toFloat elevationStr }
 
         UpdateCandleLightingMinutes candleLightingStr ->
             { settings | candleLightingMinutes = String.toInt candleLightingStr |> Maybe.withDefault 0 }
@@ -207,6 +214,17 @@ view settings =
                          , onInput UpdateLatitude
                          ]
                             ++ maybeValue settings.latitude
+                        )
+                        []
+                    , br [] []
+                    , label [ for "elevation" ] [ text "Elevation (in meters):" ]
+                    , input
+                        ([ placeholder "200"
+                         , type_ "number"
+                         , name "elevation"
+                         , onInput UpdateElevation
+                         ]
+                            ++ maybeValue settings.elevation
                         )
                         []
                     ]
