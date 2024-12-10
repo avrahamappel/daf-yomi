@@ -13,7 +13,7 @@ import Json.Encode
 import Location exposing (Position)
 import Settings exposing (Settings, update, view)
 import Task
-import Time exposing (Posix, Weekday(..), Zone)
+import Time exposing (Month(..), Posix, Weekday(..), Zone)
 
 
 
@@ -164,6 +164,79 @@ update msg model =
 
                     else
                         model.curZemanIndex
+
+                -- if the day has changed, re-fetch data
+                cmd =
+                    let
+                        monthNumber m =
+                            case m of
+                                Jan ->
+                                    1
+
+                                Feb ->
+                                    2
+
+                                Mar ->
+                                    3
+
+                                Apr ->
+                                    4
+
+                                May ->
+                                    5
+
+                                Jun ->
+                                    6
+
+                                Jul ->
+                                    7
+
+                                Aug ->
+                                    8
+
+                                Sep ->
+                                    9
+
+                                Oct ->
+                                    10
+
+                                Nov ->
+                                    11
+
+                                Dec ->
+                                    12
+
+                        toMonthNumber z =
+                            Time.toMonth z >> monthNumber
+
+                        gt f =
+                            let
+                                f_ =
+                                    f model.timezone
+                            in
+                            f_ (Time.millisToPosix model.curTime)
+                                < f_ (Time.millisToPosix newTime)
+
+                        cmd_ position =
+                            if gt Time.toDay || gt toMonthNumber || gt Time.toYear then
+                                getData
+                                    { settings = Settings.encode model.settings
+                                    , timestamp = newTime
+                                    , position = position
+                                    }
+
+                            else
+                                Cmd.none
+                    in
+                    case model.state of
+                        HasPosition position ->
+                            cmd_ position
+
+                        HasData _ position ->
+                            cmd_ position
+
+                        _ ->
+                            Cmd.none
             in
             ( { model
                 | dispTime = dispTime
@@ -171,7 +244,7 @@ update msg model =
                 , timezone = tz
                 , curZemanIndex = zemanIndex
               }
-            , Cmd.none
+            , cmd
             )
 
         SetLocation json ->
