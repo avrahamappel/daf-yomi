@@ -477,9 +477,9 @@ subscriptions _ =
         [ Location.setLocation SetLocation
         , returnData SetData
         , receiveError ReceiveError
-        , -- Update the time every minute
+        , -- Update the time every 10 seconds
           -- More often would be too jarring for the displayed zeman to suddenly flip
-          Time.every (1000 * 60) UpdateTime
+          Time.every 10000 UpdateTime
         ]
 
 
