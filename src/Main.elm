@@ -131,18 +131,12 @@ update msg model =
                 newTime =
                     Time.posixToMillis pos
 
-                newTimeIsWithin3DaysOfDispTime =
-                    abs (newTime - model.dispTime) <= (3 * 24 * 60 * 60 * 1000)
-
                 dispTime =
                     if model.dispTime == 0 then
                         -- dispTime has never been set
                         newTime
 
-                    else if newTimeIsWithin3DaysOfDispTime then
-                        -- if the date we are viewing is less than three days
-                        -- away from the current date, use new time
-                        -- for dispTime as well
+                    else if isViewingCurrentZeman then
                         newTime
 
                     else
@@ -156,18 +150,33 @@ update msg model =
                     upcomingZemanIndex model.state newTime
 
                 zemanIndex =
-                    if
-                        newTimeIsWithin3DaysOfDispTime
-                            && isViewingCurrentZeman
-                    then
+                    if isViewingCurrentZeman then
                         newZemanimIndex
 
                     else
                         model.curZemanIndex
 
-                -- if the day has changed, re-fetch data
+                -- if all zemanim are in the past and the date has changed, fetch new data
                 cmd =
                     let
+                        allZemanimAreInThePast =
+                            case model.state of
+                                HasData data _ ->
+                                    case data.zemanimState of
+                                        HasZemanim zmnm ->
+                                            Array.toIndexedList zmnm.zemanim
+                                                |> List.map Tuple.second
+                                                |> List.all
+                                                    (\zn ->
+                                                        Time.posixToMillis zn.value < newTime
+                                                    )
+
+                                        _ ->
+                                            False
+
+                                _ ->
+                                    False
+
                         monthNumber m =
                             case m of
                                 Jan ->
@@ -217,8 +226,11 @@ update msg model =
                             f_ (Time.millisToPosix model.curTime)
                                 < f_ (Time.millisToPosix newTime)
 
+                        dateHasChanged =
+                            gt Time.toDay || gt toMonthNumber || gt Time.toYear
+
                         cmd_ position =
-                            if gt Time.toDay || gt toMonthNumber || gt Time.toYear then
+                            if allZemanimAreInThePast && dateHasChanged then
                                 getData
                                     { settings = Settings.encode model.settings
                                     , timestamp = newTime
@@ -477,9 +489,7 @@ subscriptions _ =
         [ Location.setLocation SetLocation
         , returnData SetData
         , receiveError ReceiveError
-        , -- Update the time every 10 seconds
-          -- More often would be too jarring for the displayed zeman to suddenly flip
-          Time.every 10000 UpdateTime
+        , Time.every 1000 UpdateTime
         ]
 
 
