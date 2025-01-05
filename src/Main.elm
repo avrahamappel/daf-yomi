@@ -120,6 +120,51 @@ dayInMillis =
     1000 * 60 * 60 * 24
 
 
+monthNumber : Month -> number
+monthNumber m =
+    case m of
+        Jan ->
+            1
+
+        Feb ->
+            2
+
+        Mar ->
+            3
+
+        Apr ->
+            4
+
+        May ->
+            5
+
+        Jun ->
+            6
+
+        Jul ->
+            7
+
+        Aug ->
+            8
+
+        Sep ->
+            9
+
+        Oct ->
+            10
+
+        Nov ->
+            11
+
+        Dec ->
+            12
+
+
+toMonthNumber : Zone -> Posix -> number
+toMonthNumber z =
+    Time.toMonth z >> monthNumber
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -143,7 +188,20 @@ update msg model =
                         model.dispTime
 
                 isViewingCurrentZeman =
-                    upcomingZemanIndex model.state model.dispTime
+                    let
+                        eq f =
+                            let
+                                f_ =
+                                    f model.timezone
+                            in
+                            f_ (Time.millisToPosix model.curTime)
+                                == f_ (Time.millisToPosix newTime)
+
+                        isSameDate =
+                            eq Time.toDay || eq toMonthNumber || eq Time.toYear
+                    in
+                    isSameDate
+                        && upcomingZemanIndex model.state model.dispTime
                         == model.curZemanIndex
 
                 newZemanimIndex =
@@ -176,47 +234,6 @@ update msg model =
 
                                 _ ->
                                     False
-
-                        monthNumber m =
-                            case m of
-                                Jan ->
-                                    1
-
-                                Feb ->
-                                    2
-
-                                Mar ->
-                                    3
-
-                                Apr ->
-                                    4
-
-                                May ->
-                                    5
-
-                                Jun ->
-                                    6
-
-                                Jul ->
-                                    7
-
-                                Aug ->
-                                    8
-
-                                Sep ->
-                                    9
-
-                                Oct ->
-                                    10
-
-                                Nov ->
-                                    11
-
-                                Dec ->
-                                    12
-
-                        toMonthNumber z =
-                            Time.toMonth z >> monthNumber
 
                         gt f =
                             let
