@@ -10,6 +10,7 @@
     "check": "elm make --output /dev/null"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^6.1.0",
     "@vitejs/plugin-legacy": "^6.0.0",
     "terser": "^5.36.0",
