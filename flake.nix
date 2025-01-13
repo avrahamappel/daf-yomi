@@ -52,7 +52,13 @@
             elm-language-server
             elm-format
             nodejs
+            importNpmLock.hooks.linkNodeModulesHook
           ];
+
+          npmDeps = pkgs.importNpmLock.buildNodeModules {
+            npmRoot = ./.;
+            inherit (pkgs) nodejs;
+          };
 
           env = androidEnvironment;
         };
@@ -62,7 +68,10 @@
             pname = packageJson.name;
             version = packageJson.version;
             src = ./.;
-            npmDepsHash = "sha256-+cYFlfI7CCwDjzm4NxOxLlxnklUA0DLVAMlFUhVqv5I=";
+            npmDeps = pkgs.importNpmLock {
+              npmRoot = ./.;
+            };
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
             nativeBuildInputs = with pkgs; [ elmPackages.elm ];
             configurePhase = pkgs.elmPackages.fetchElmDeps {
               elmPackages = import ./elm-srcs.nix;
