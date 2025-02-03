@@ -17,7 +17,7 @@
     "vite-plugin-elm": "^3.0.1"
   },
   "dependencies": {
-    "@capacitor/android": "^6.1.0",
+    "@capacitor/android": "^7.0.1",
     "@capacitor/core": "^6.1.0",
     "@capacitor/geolocation": "^6.0.0",
     "@hebcal/core": "^5.8.5",
