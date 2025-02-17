@@ -43,7 +43,7 @@
         };
       in
       {
-        devShells.default = pkgs.mkShell {
+        devShells={default = pkgs.mkShell {
           packages = with pkgs; with elmPackages; [
             androidComposition.androidsdk
             jdk
@@ -55,6 +55,13 @@
           ];
 
           env = androidEnvironment;
+        };
+        dioxus = pkgs.mkShell {
+          packages = with pkgs; [
+            cargo
+            rust-analyzer
+          ];
+        };
         };
 
         packages = {
