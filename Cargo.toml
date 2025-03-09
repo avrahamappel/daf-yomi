@@ -1,0 +1,6 @@
+[package]
+name = "daf-yomi"
+edition = "2021"
+
+[dependencies]
+jiff = "0.2.3"

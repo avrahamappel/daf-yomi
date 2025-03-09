@@ -43,25 +43,27 @@
         };
       in
       {
-        devShells={default = pkgs.mkShell {
-          packages = with pkgs; with elmPackages; [
-            androidComposition.androidsdk
-            jdk
-            elmWrapper
-            elm2nix
-            elm-language-server
-            elm-format
-            nodejs
-          ];
+        devShells = {
+          default = pkgs.mkShell {
+            packages = with pkgs; with elmPackages; [
+              androidComposition.androidsdk
+              jdk
+              elmWrapper
+              elm2nix
+              elm-language-server
+              elm-format
+              nodejs
+            ];
 
-          env = androidEnvironment;
-        };
-        dioxus = pkgs.mkShell {
-          packages = with pkgs; [
-            cargo
-            rust-analyzer
-          ];
-        };
+            env = androidEnvironment;
+          };
+          dioxus = pkgs.mkShell {
+            packages = with pkgs; [
+              bacon
+              cargo
+              rust-analyzer
+            ];
+          };
         };
 
         packages = {
