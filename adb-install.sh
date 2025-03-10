@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+npm install
 vite build
 npx cap sync
 cd android || exit 1
