@@ -2,6 +2,7 @@ package com.dafyomi.app;
 
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.SystemClock;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -19,9 +20,18 @@ public class MockLocationPlugin extends Plugin {
         Location mockLocation = new Location(LocationManager.GPS_PROVIDER);
         mockLocation.setLatitude(latitude);
         mockLocation.setLongitude(longitude);
+        mockLocation.setAccuracy(2.0f);
+        mockLocation.setTime(System.currentTimeMillis());
+        mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
 
         LocationManager locationManager = (LocationManager) getContext().getSystemService(getContext().LOCATION_SERVICE);
-        locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
+        locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+
+        try {
+            locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
+        } catch (SecurityException e) {
+            // Need to register the app as mock location provider
+        }
 
         JSObject result = new JSObject();
         call.resolve(result);
