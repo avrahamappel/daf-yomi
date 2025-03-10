@@ -4,8 +4,6 @@ export interface MockLocationPlugin {
     setMockLocation(options: { latitude: number; longitude: number }): Promise<void>;
 }
 
-const MockLocation = registerPlugin<MockLocationPlugin>('MockLocation', {
-    // android: () => import('./android/MockLocationAndroid').then(m => m.MockLocationAndroid),
-});
+const MockLocation = registerPlugin<MockLocationPlugin>('MockLocation');
 
 export { MockLocation };

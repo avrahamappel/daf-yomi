@@ -1,4 +1,4 @@
-package com.daf_yomi.plugin.mocklocation;
+package com.dafyomi.app;
 
 import android.location.Location;
 import android.location.LocationManager;

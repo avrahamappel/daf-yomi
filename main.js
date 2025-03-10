@@ -1,12 +1,8 @@
-import { Capacitor } from '@capacitor/core';
 import './style.css'
 import { Elm } from './src/Main.elm'
 import { getData } from './src/data'
 import { getLocation } from './src/location'
 import { getSettings, updateSettings } from './src/settings';
-import { MockLocation } from './src/plugins/mock-location';
-
-Capacitor.addPlugin('MockLocation', MockLocation);
 
 const initialSettings = getSettings();
 const app = Elm.Main.init({

@@ -1,7 +1,7 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
-import { Settings } from "./settings";
-import { MockLocation } from "./plugins/mock-location";
+import { Settings } from './settings';
+import { MockLocation } from './plugins/mock-location';
 
 export type Position = {
     name?: string,
@@ -18,9 +18,7 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
         if (Capacitor.getPlatform() === 'android') {
             const { latitude, longitude } = settings;
             if (latitude && longitude) {
-                MockLocation.setMockLocation({ latitude, longitude }).catch((e) => {
-                    console.error(e);
-                });
+                MockLocation.setMockLocation({ latitude, longitude });
             }
         }
 
