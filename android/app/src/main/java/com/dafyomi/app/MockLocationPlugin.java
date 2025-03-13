@@ -1,5 +1,7 @@
 package com.dafyomi.app;
 
+// This is heavily inspired by https://github.com/lilstiffy/MockGps/blob/master/app/src/main/java/com/lilstiffy/mockgps/service/MockLocationService.kt
+
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.provider.ProviderProperties;
