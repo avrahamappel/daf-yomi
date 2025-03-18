@@ -1,5 +1,10 @@
 {
 
+      "elm-explorations/test" = {
+        sha256 = "10k8ja78zrvkmjx96l99lmngk1d9ix0m1n2rai9x0nw47i4vx8gh";
+        version = "2.2.0";
+      };
+
       "elm/browser" = {
         sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
         version = "1.0.2";
@@ -27,6 +32,16 @@
 
       "ryan-haskell/date-format" = {
         sha256 = "18r9h72h3i507snjf5aw099s2ymv2qsr3x3ibnsmap407s98355y";
+        version = "1.0.0";
+      };
+
+      "elm/bytes" = {
+        sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
+        version = "1.0.8";
+      };
+
+      "elm/random" = {
+        sha256 = "138n2455wdjwa657w6sjq18wx2r0k60ibpc4frhbqr50sncxrfdl";
         version = "1.0.0";
       };
 
