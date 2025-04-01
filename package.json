@@ -22,6 +22,6 @@
     "@capacitor/geolocation": "^6.0.0",
     "@hebcal/core": "^5.8.5",
     "@hebcal/learning": "^6.0.1",
-    "temporal-polyfill": "^0.2.1"
+    "temporal-polyfill": "^0.3.0"
   }
 }
