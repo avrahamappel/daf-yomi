@@ -11,7 +11,10 @@
             inherit system;
             config.android_sdk.accept_license = true;
             config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+              "android-sdk-build-tools"
               "android-sdk-cmdline-tools"
+              "android-sdk-platform-tools"
+              "android-sdk-platforms"
               "android-sdk-tools"
             ];
           };
