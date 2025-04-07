@@ -15,4 +15,4 @@ A live version of the app is available at https://avrahamappel.github.io/daf-yom
 - [ ] Add Elm tests
   - [ ] Fix date switching jump bug
 - [ ] Automate Android build with GHA
-- [ ] Upgrade to Capacitor 7
+- [x] Upgrade to Capacitor 7
