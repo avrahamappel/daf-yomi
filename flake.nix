@@ -38,7 +38,7 @@
         buildToolsVersion = "34.0.0";
         androidComposition = pkgs.androidenv.composeAndroidPackages {
           buildToolsVersions = [ buildToolsVersion ];
-          platformVersions = [ "34" ];
+          platformVersions = [ "35" ];
         };
         androidEnvironment = rec {
           ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
@@ -65,7 +65,7 @@
             pname = packageJson.name;
             version = packageJson.version;
             src = ./.;
-            npmDepsHash = "sha256-h/WJrJxsjTfIofShmWahn1WvUYgAGX4SkmMs8CEIBAQ=";
+            npmDepsHash = "sha256-wU7n3VMEpjXcaK383yBJpG26C1UeNDz2AX1R2wyKKjc=";
             nativeBuildInputs = with pkgs; [ elmPackages.elm ];
             configurePhase = pkgs.elmPackages.fetchElmDeps {
               elmPackages = import ./elm-srcs.nix;
