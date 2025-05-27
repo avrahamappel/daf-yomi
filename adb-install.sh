@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix
+#!nix develop --command bash
 
 npm install
-vite build
+npx vite build
 npx cap sync
 cd android || exit 1
 ./gradlew assemble
