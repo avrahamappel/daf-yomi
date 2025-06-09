@@ -55,6 +55,10 @@
             elm-language-server
             elm-format
             nodejs
+            cargo
+            lld
+            rustc
+            wasm-pack
           ];
 
           env = androidEnvironment;
