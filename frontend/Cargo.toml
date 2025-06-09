@@ -1,0 +1,14 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+leptos = { version = "0.6", features = ["csr"] }
+leptos_meta = "0.6"
+leptos_router = "0.6"
+console_error_panic_hook = "0.1"
+wasm-bindgen = "0.2"
