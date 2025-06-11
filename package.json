@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite build -w & vite preview --host 0.0.0.0",
-    "check": "elm make --output /dev/null"
+    "build:wasm": "cd frontend && wasm-pack build --target web --out-dir ./pkg"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",

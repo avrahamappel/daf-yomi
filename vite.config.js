@@ -1,10 +1,15 @@
-import legacy from '@vitejs/plugin-legacy'
 import { defineConfig } from 'vite'
-import { plugin } from 'vite-plugin-elm'
 
 export default defineConfig({
-    plugins: [
-        plugin(),
-        legacy({ targets: ['kaios >= 48'] }),
-    ],
+    build: {
+        outDir: "dist",
+        rollupOptions: {
+            input: 'index.html'
+        }
+    },
+    server: {
+        fs: {
+            allow: ['.'], // allow serving files from project root
+        },
+    },
 });
