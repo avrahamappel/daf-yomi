@@ -55,9 +55,13 @@
             elm-language-server
             elm-format
             nodejs
+            bacon
             cargo
+            clippy
             lld
             rustc
+            rustfmt
+            rust-analyzer
             wasm-pack
           ];
 
