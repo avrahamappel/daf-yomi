@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite build -w & vite preview --host 0.0.0.0",
-    "build:wasm": "cd frontend && wasm-pack build --target web --out-dir ./pkg"
+    "build:wasm": "cd frontend && wasm-pack build --target web --out-dir ./pkg",
+    "build:wasm:watch": "cd frontend && cargo watch -s 'npm run build:wasm'"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",

@@ -13,11 +13,11 @@ fn main() {
 pub fn App() -> impl IntoView {
     view! {
         <Stylesheet id="leptos" href="/main.css"/>
-        <Router>
+        //<Router>
             <main>
                 <h1>"Leptos Scaffold"</h1>
-                <Outlet/>
+
             </main>
-        </Router>
+        //</Router>
     }
 }

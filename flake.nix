@@ -50,13 +50,9 @@
           packages = with pkgs; with elmPackages; [
             androidComposition.androidsdk
             jdk
-            elmWrapper
-            elm2nix
-            elm-language-server
-            elm-format
             nodejs
-            bacon
             cargo
+            cargo-watch
             clippy
             lld
             rustc
