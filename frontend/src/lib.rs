@@ -5,7 +5,7 @@ mod app;
 use app::App;
 
 #[wasm_bindgen(start)]
-fn main() {
+fn run() {
     console_error_panic_hook::set_once();
     leptos::mount_to_body(|| view! { <App/> });
 }

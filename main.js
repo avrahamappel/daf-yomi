@@ -1,5 +1,3 @@
-import init, { main } from './frontend/pkg/frontend.js';
+import init from './frontend/pkg/frontend.js';
 
-init().then(() => {
-  main();
-});
+init()
