@@ -1,7 +1,6 @@
 use leptos::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 
 // --- Model Types ---
 
@@ -61,6 +60,40 @@ pub enum Msg {
 }
 
 // --- Leptos App ---
+#[component]
+pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
+    let model = model.get(); // Snapshot for now; later use reactivity.
+
+    let main_view = match &model.state {
+        State::LoadingData => {
+            view! { <>"Fetching position..."</> }
+        }
+        State::Error(e) => {
+            view! {
+                <>
+                    <span style="color:red;">{e}</span>
+                </>
+            }
+        }
+        State::HasPosition(_) => {
+            view! { <>"Loading data..."</> }
+        }
+        State::HasData(_data, _pos) => {
+            view! { <>{} <span>"Zemanim/Shiurim/Location view placeholder"</span></> }
+        }
+    };
+
+    match model.page {
+        Page::Main => view! {
+            <>
+                {main_view} <br /> <br /> <br /> <button class="ctl-button" on:click=move |_| {}>
+                    "Settings"
+                </button>
+            </>
+        },
+        Page::Settings => view! { <>{} <span>"Settings page placeholder"</span></> },
+    }
+}
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -80,7 +113,7 @@ pub fn App() -> impl IntoView {
         <Router>
             <main>
                 <h1>"Leptos Scaffold"</h1>
-                // TODO: port view logic and wire to model
+                <MainView model=model />
             </main>
         </Router>
     }
