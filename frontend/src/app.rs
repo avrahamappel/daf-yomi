@@ -35,7 +35,39 @@ pub struct Model {
 pub struct Position;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct Data;
+pub struct Data {
+    pub date: String,
+    pub hdate: String,
+    pub zemanim_state: ZemanimState,
+    pub shiurim: Vec<Shiur>,
+    pub parsha: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum ZemanimState {
+    GeoError(String),
+    HasZemanim(Zemanim),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Zemanim {
+    pub zemanim: Vec<Zeman>,
+    pub latitude: String,
+    pub longitude: String,
+    pub location_name: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Zeman {
+    pub name: String,
+    pub value: i64, // POSIX millis
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Shiur {
+    pub name: String,
+    pub value: String,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Settings;
@@ -84,10 +116,52 @@ pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
             State::HasPosition(_) => {
                 view! { <>"Loading data..."</> }
             }
-            State::HasData(_data, _pos) => {
+            State::HasData(data, _pos) => {
+                // Render zemanim line, shiurim line, and location
+                let (zemanim_line1, zemanim_line2, location) = match &data.zemanim_state {
+                    ZemanimState::HasZemanim(zmnm) => {
+                        let location_string = zmnm
+                            .location_name
+                            .clone()
+                            .unwrap_or_else(|| format!("{}, {}", zmnm.latitude, zmnm.longitude));
+                        if let Some(zm) = zmnm.zemanim.get(model.cur_zeman_index) {
+                            (
+                                zm.name.clone(),
+                                posix_to_time_string(&model.timezone, zm.value),
+                                location_string,
+                            )
+                        } else {
+                            (
+                                "Error".to_string(),
+                                format!("No entry for index {}", model.cur_zeman_index),
+                                location_string,
+                            )
+                        }
+                    }
+                    ZemanimState::GeoError(e) => ("Error".to_string(), e.clone(), "".to_string()),
+                };
+
+                let (shiurim_line1, shiurim_line2) =
+                    if let Some(shiur) = data.shiurim.get(model.cur_shiur_index) {
+                        (shiur.name.clone(), shiur.value.clone())
+                    } else {
+                        (
+                            "Error".to_string(),
+                            format!("No entry for index {}", model.cur_shiur_index),
+                        )
+                    };
+
+                let week_and_day = week_and_day(&model.timezone, model.disp_time, &data.parsha);
+
                 view! {
                     <>
-                        <span>"Zemanim/Shiurim/Location view placeholder"</span>
+                        // Replace these with your switcher components as you port them
+                        <div>{data.hdate.clone()} {week_and_day.clone()}</div>
+                        <div class="sub-text">{data.date.clone()}</div>
+                        <div>{shiurim_line1} {shiurim_line2}</div>
+                        <br />
+                        <div>{zemanim_line1} {zemanim_line2}</div>
+                        <div class="sub-text">{location}</div>
                     </>
                 }
             }
@@ -118,6 +192,19 @@ pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
             }
         }
     }
+}
+
+fn posix_to_time_string(_timezone: &str, millis: i64) -> String {
+    // TODO: Port actual timezone logic, this is a placeholder
+    use chrono::{DateTime, Timelike};
+    let secs = millis / 1000;
+    let dt = DateTime::from_timestamp(secs, 0).unwrap_or_default();
+    format!("{:02}:{:02}", dt.hour(), dt.minute())
+}
+
+fn week_and_day(_zone: &str, _time: i64, parsha: &str) -> String {
+    // TODO: Port weekday logic, this is a placeholder
+    format!("יום א׳ {}", parsha)
 }
 
 #[component]
