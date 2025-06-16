@@ -62,36 +62,61 @@ pub enum Msg {
 // --- Leptos App ---
 #[component]
 pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
-    let model = model.get(); // Snapshot for now; later use reactivity.
-
-    let main_view = match &model.state {
-        State::LoadingData => {
-            view! { <>"Fetching position..."</> }
-        }
-        State::Error(e) => {
-            view! {
-                <>
-                    <span style="color:red;">{e}</span>
-                </>
-            }
-        }
-        State::HasPosition(_) => {
-            view! { <>"Loading data..."</> }
-        }
-        State::HasData(_data, _pos) => {
-            view! { <>{} <span>"Zemanim/Shiurim/Location view placeholder"</span></> }
+    let set_page = {
+        move |page: Page| {
+            model.update(|m| m.page = page);
         }
     };
 
-    match model.page {
-        Page::Main => view! {
-            <>
-                {main_view} <br /> <br /> <br /> <button class="ctl-button" on:click=move |_| {}>
-                    "Settings"
-                </button>
-            </>
-        },
-        Page::Settings => view! { <>{} <span>"Settings page placeholder"</span></> },
+    let main_view = move || {
+        let model = model.get(); // Snapshot for now; later use reactivity.
+        match &model.state {
+            State::LoadingData => {
+                view! { <>"Fetching position..."</> }
+            }
+            State::Error(e) => {
+                view! {
+                    <>
+                        <span style="color:red;">{e}</span>
+                    </>
+                }
+            }
+            State::HasPosition(_) => {
+                view! { <>"Loading data..."</> }
+            }
+            State::HasData(_data, _pos) => {
+                view! {
+                    <>
+                        <span>"Zemanim/Shiurim/Location view placeholder"</span>
+                    </>
+                }
+            }
+        }
+    };
+
+    move || {
+        let model = model.get();
+        match model.page {
+            Page::Main => view! {
+                <>
+                    {main_view} <br /> <br /> <br />
+                    <button class="ctl-button" on:click=move |_| set_page(Page::Settings)>
+                        "Settings"
+                    </button>
+                </>
+            },
+            Page::Settings => {
+                view! {
+                    <>
+                        <span>"Settings page placeholder"</span>
+                        <br />
+                        <button class="ctl-button" on:click=move |_| set_page(Page::Main)>
+                            "Close Settings"
+                        </button>
+                    </>
+                }
+            }
+        }
     }
 }
 
