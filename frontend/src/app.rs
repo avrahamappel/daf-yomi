@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_lines, clippy::struct_field_names)]
+
 use leptos::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
@@ -77,18 +79,18 @@ pub struct Settings;
 #[derive(Clone, Debug)]
 pub enum Msg {
     None,
-    AdjustTime,         // (Zone, Posix)
-    SetLocation,        // Json value
-    SetData,            // Json value
-    ChangeDate,         // SwitcherMsg
-    ChangeZeman,        // SwitcherMsg
-    ChangeShiur,        // SwitcherMsg
+    AdjustTime,  // (Zone, Posix)
+    SetLocation, // Json value
+    SetData,     // Json value
+    ChangeDate,  // SwitcherMsg
+    ChangeZeman, // SwitcherMsg
+    ChangeShiur, // SwitcherMsg
     ReceiveError(String),
     OpenSettings,
     CloseSettings,
-    UpdateSettings,     // Settings.Msg
+    UpdateSettings, // Settings.Msg
     SaveSettings,
-    UpdateTime,         // i64
+    UpdateTime, // i64
 }
 
 // --- Leptos App ---
@@ -138,7 +140,7 @@ pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
                             )
                         }
                     }
-                    ZemanimState::GeoError(e) => ("Error".to_string(), e.clone(), "".to_string()),
+                    ZemanimState::GeoError(e) => ("Error".to_string(), e.clone(), String::new()),
                 };
 
                 let (shiurim_line1, shiurim_line2) =
