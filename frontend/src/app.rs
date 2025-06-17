@@ -153,14 +153,36 @@ pub fn MainView(model: RwSignal<Model>) -> impl IntoView {
 
                 let week_and_day = week_and_day(&model.timezone, model.disp_time, &data.parsha);
 
+                // Define callbacks for switchers (these would update model indices in a real app)
+                let on_change_date = Callback::new(|_msg: SwitcherMsg| {
+                    // TODO: implement date change logic
+                });
+                let on_change_shiur = Callback::new(|_msg: SwitcherMsg| {
+                    // TODO: implement shiur change logic
+                });
+                let on_change_zeman = Callback::new(|_msg: SwitcherMsg| {
+                    // TODO: implement zeman change logic
+                });
+
                 view! {
                     <>
-                        // Replace these with your switcher components as you port them
-                        <div>{data.hdate.clone()} {week_and_day.clone()}</div>
+                        <Switcher
+                            line1=data.hdate.clone()
+                            line2=week_and_day.clone()
+                            on_switch=on_change_date
+                        />
                         <div class="sub-text">{data.date.clone()}</div>
-                        <div>{shiurim_line1} {shiurim_line2}</div>
+                        <Switcher
+                            line1=shiurim_line1
+                            line2=shiurim_line2
+                            on_switch=on_change_shiur
+                        />
                         <br />
-                        <div>{zemanim_line1} {zemanim_line2}</div>
+                        <Switcher
+                            line1=zemanim_line1
+                            line2=zemanim_line2
+                            on_switch=on_change_zeman
+                        />
                         <div class="sub-text">{location}</div>
                     </>
                 }
@@ -228,5 +250,31 @@ pub fn App() -> impl IntoView {
                 <MainView model=model />
             </main>
         </Router>
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum SwitcherMsg {
+    Left,
+    Middle,
+    Right,
+}
+
+#[component]
+pub fn Switcher(line1: String, line2: String, on_switch: Callback<SwitcherMsg>) -> impl IntoView {
+    view! {
+        <div class="switcher">
+            <button class="switcher-left" on:click=move |_| on_switch.call(SwitcherMsg::Left)>
+                {"<"}
+            </button>
+            <button class="switcher-middle" on:click=move |_| on_switch.call(SwitcherMsg::Middle)>
+                <span>{line1}</span>
+                <br />
+                <span>{line2}</span>
+            </button>
+            <button class="switcher-right" on:click=move |_| on_switch.call(SwitcherMsg::Right)>
+                {">"}
+            </button>
+        </div>
     }
 }
