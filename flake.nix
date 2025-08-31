@@ -16,6 +16,12 @@
               "android-sdk-platform-tools"
               "android-sdk-platforms"
               "android-sdk-tools"
+              "build-tools"
+              "cmake"
+              "cmdline-tools"
+              "platform-tools"
+              "platforms"
+              "tools"
             ];
           };
 
