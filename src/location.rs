@@ -6,4 +6,5 @@ struct Position {
 }
 
 pub fn get_location(settings: Settings, next: fn(Position) -> (), error: fn(String) -> ()) {
+    todo!()
 }

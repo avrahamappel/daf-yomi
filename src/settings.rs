@@ -12,3 +12,11 @@ struct Settings {
     candle_lighting_minutes: i32,
     show_plag: bool,
 }
+
+pub fn get_settings() -> Settings {
+    todo!()
+}
+
+pub fn update_settings(settings: Settings) {
+    todo!()
+}
