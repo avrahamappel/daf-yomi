@@ -1,3 +1,5 @@
+use crate::settings::Settings;
+
 struct Position {
     name: Option<String>,
     longitude: f64,

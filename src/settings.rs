@@ -1,10 +1,14 @@
+use dioxus::prelude::*;
+
+#[derive(Clone, PartialEq)]
 enum LocationMethod {
     IP,
     GPS,
     Manual,
 }
 
-struct Settings {
+#[derive(Clone, PartialEq)]
+pub struct Settings {
     location_method: LocationMethod,
     longitude: Option<f64>,
     latitude: Option<f64>,
@@ -19,4 +23,24 @@ pub fn get_settings() -> Settings {
 
 pub fn update_settings(settings: Settings) {
     todo!()
+}
+
+#[component]
+fn SettingsView(settings: Settings) -> Element {
+    rsx! {
+        div { style: "text-align: left",
+            h1 { "Settings" }
+            div {
+                "Location Method: "
+                div {
+                    label {
+                        input {
+                            r#type: "radio",
+                            checked: settings.location_method == LocationMethod::IP,
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
