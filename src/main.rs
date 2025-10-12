@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
+mod data;
+use data::Data;
 mod location;
+use location::Position;
 mod settings;
 
 enum SwitchEvent {
@@ -37,18 +40,28 @@ fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> Element
     }
 }
 
+enum State {
+    LoadingData,
+    Error(String),
+    HasPosition(Position),
+    HasData(Data, Position),
+}
+
+struct Model {
+    state: State,
+}
+
 #[component]
 fn App() -> Element {
-    rsx! {
-        Switcher {
-            line1: "Line 1",
-            line2: "Line 2",
-            on_switch: move |event| match event {
-                SwitchEvent::Left => println!("Left"),
-                SwitchEvent::Middle => println!("Middle"),
-                SwitchEvent::Right => println!("Right"),
-            },
-        }
+    let model = use_signal(|| Model {
+        state: State::LoadingData,
+    });
+
+    match &model.read().state {
+        State::LoadingData => rsx! { "Fetching position..." },
+        State::Error(e) => rsx! { span { style: "color: red", "{e}" } },
+        State::HasPosition(_) => todo!(),
+        State::HasData(_, _) => todo!(),
     }
 }
 
