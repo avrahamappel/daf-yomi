@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq)]
-enum LocationMethod {
+pub enum LocationMethod {
     IP,
     GPS,
     Manual,
@@ -9,12 +9,16 @@ enum LocationMethod {
 
 #[derive(Clone, PartialEq)]
 pub struct Settings {
-    location_method: LocationMethod,
-    longitude: Option<f64>,
-    latitude: Option<f64>,
+    pub location_method: LocationMethod,
+    pub longitude: Option<f64>,
+    pub latitude: Option<f64>,
     elevation: Option<f64>,
     candle_lighting_minutes: i32,
     show_plag: bool,
+}
+
+pub fn use_settings() -> Settings {
+    todo!()
 }
 
 pub fn get_settings() -> Settings {
