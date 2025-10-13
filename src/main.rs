@@ -17,8 +17,7 @@ enum SwitchEvent {
 #[component]
 fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> Element {
     rsx! {
-        div {
-            class: "switcher-group",
+        div { class: "switcher-group",
             button {
                 class: "switcher-left",
                 onclick: move |_| on_switch(SwitchEvent::Left),
@@ -27,8 +26,8 @@ fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> Element
             button {
                 class: "switcher-middle",
                 onclick: move |_| on_switch(SwitchEvent::Middle),
-                "{line1}",
-                br {},
+                "{line1}"
+                br {}
                 "{line2}"
             }
             button {
@@ -52,6 +51,7 @@ struct Model {
 }
 
 static CSS: Asset = asset!("/style.css");
+static LOGO: Asset = asset!("/public/logo.svg");
 
 #[component]
 fn Main() -> Element {
@@ -61,7 +61,9 @@ fn Main() -> Element {
 
     match &model.read().state {
         State::LoadingData => rsx! { "Fetching position..." },
-        State::Error(e) => rsx! { span { style: "color: red", "{e}" } },
+        State::Error(e) => rsx! {
+            span { style: "color: red", "{e}" }
+        },
         State::HasPosition(_) => todo!(),
         State::HasData(_, _) => todo!(),
     }
@@ -70,12 +72,11 @@ fn Main() -> Element {
 #[component]
 fn App() -> Element {
     rsx! {
+        document::Title { "Daf Yomi and local Zemanim" }
+        document::Link { rel: "icon", href: LOGO, r#type: "image/svg+xml" }
         document::Stylesheet { href: CSS }
 
-        div {
-            id: "app",
-            Main {}
-        }
+        div { id: "app", Main {} }
     }
 }
 
