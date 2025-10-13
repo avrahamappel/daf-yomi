@@ -51,8 +51,10 @@ struct Model {
     state: State,
 }
 
+static CSS: Asset = asset!("/style.css");
+
 #[component]
-fn App() -> Element {
+fn Main() -> Element {
     let model = use_signal(|| Model {
         state: State::LoadingData,
     });
@@ -62,6 +64,18 @@ fn App() -> Element {
         State::Error(e) => rsx! { span { style: "color: red", "{e}" } },
         State::HasPosition(_) => todo!(),
         State::HasData(_, _) => todo!(),
+    }
+}
+
+#[component]
+fn App() -> Element {
+    rsx! {
+        document::Stylesheet { href: CSS }
+
+        div {
+            id: "app",
+            Main {}
+        }
     }
 }
 
