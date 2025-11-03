@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 mod data;
 use data::Data;
 mod location;
-use location::Position;
+use location::{use_location, Position};
 mod settings;
 
 enum SwitchEvent {
@@ -55,8 +55,16 @@ static LOGO: Asset = asset!("/public/logo.svg");
 
 #[component]
 fn Main() -> Element {
-    let model = use_signal(|| Model {
-        state: State::LoadingData,
+    let model = use_signal(|| {
+        let location = use_location();
+
+        let state = match location {
+            Ok(None) => State::LoadingData,
+            Ok(Some(position)) => State::HasPosition(position),
+            Err(e) => State::Error(e),
+        };
+
+        Model { state }
     });
 
     match &model.read().state {
@@ -64,7 +72,7 @@ fn Main() -> Element {
         State::Error(e) => rsx! {
             span { style: "color: red", "{e}" }
         },
-        State::HasPosition(_) => todo!(),
+        State::HasPosition(_) => rsx! { "Loading data..." },
         State::HasData(_, _) => todo!(),
     }
 }
