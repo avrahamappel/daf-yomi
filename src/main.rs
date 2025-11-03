@@ -1,10 +1,14 @@
 use dioxus::prelude::*;
 
 mod data;
-use data::Data;
 mod location;
-use location::{use_location, Position};
 mod settings;
+
+use crate::{
+    data::Data,
+    location::{get_location, Position},
+    settings::{update_settings, use_settings},
+};
 
 enum SwitchEvent {
     Right,
@@ -74,7 +78,8 @@ fn MainView(model: Model) -> Element {
 #[component]
 fn Main() -> Element {
     let model = use_signal(|| {
-        let location = use_location();
+        let settings = use_settings();
+        let location = get_location(settings);
 
         let state = match location {
             Ok(None) => State::LoadingData,
@@ -89,6 +94,12 @@ fn Main() -> Element {
     });
 
     let open_settings = move |_| model.page = Page::Settings;
+    let close_settings = move |_| model.page = Page::Main;
+    let save_settings = move |_| {
+        let location = get_location(model.settings);
+        update_settings(model.settings);
+        model.page = Page::Main;
+    };
 
     match &model.read().page {
         Page::Main => {
@@ -100,7 +111,14 @@ fn Main() -> Element {
                 button { class: "ctl-button", onclick: open_settings, "Settings" }
             }
         },
-        Page::Settings => todo!(),
+        Page::Settings => {
+            rsx! {
+                SettingsView { settings: model.settings }
+                br {}
+                button { class: "ctl-button", onclick: save_settings, "Save" }
+                button { class: "ctl-button", onclick: close_settings, "Close" }
+            }
+        },
     }
 }
 

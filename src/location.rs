@@ -3,7 +3,7 @@ use dioxus_geolocation::{init_geolocator, use_geolocation, PowerMode};
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 
-use crate::settings::{use_settings, LocationMethod};
+use crate::settings::{use_settings, LocationMethod, Settings};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct Position {
@@ -28,6 +28,10 @@ struct IpApiResponse {
     longitude: f64,
 }
 
+pub fn get_location(settings: Settings) -> Result<Option<Position>, PositionError> {
+    todo!()
+}
+
 pub fn use_location() -> UseLocation {
     let settings = use_settings();
 
@@ -39,7 +43,7 @@ pub fn use_location() -> UseLocation {
                 longitude: settings.longitude.unwrap_or_default(),
                 ..Default::default()
             })
-        }
+        },
         LocationMethod::IP => {
             let cached = LocalStorage::get(STORAGE_KEY).ok();
 
@@ -60,7 +64,7 @@ pub fn use_location() -> UseLocation {
             });
 
             UseLocation { inner }
-        }
+        },
         LocationMethod::GPS => {
             let geolocator = init_geolocator(PowerMode::Low)?;
             let coords = use_geolocation()?;
@@ -71,6 +75,6 @@ pub fn use_location() -> UseLocation {
                 altitude: coords.altitude,
                 ..Default::default()
             })
-        }
+        },
     }
 }

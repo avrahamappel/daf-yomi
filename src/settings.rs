@@ -30,7 +30,7 @@ pub fn update_settings(settings: Settings) {
 }
 
 #[component]
-fn SettingsView(settings: Settings) -> Element {
+pub fn SettingsView(settings: Settings) -> Element {
     rsx! {
         div { style: "text-align: left",
             h1 { "Settings" }
