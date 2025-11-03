@@ -39,6 +39,11 @@ fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> Element
     }
 }
 
+enum Page {
+    Main,
+    Settings,
+}
+
 enum State {
     LoadingData,
     Error(String),
@@ -47,11 +52,24 @@ enum State {
 }
 
 struct Model {
+    page: Page,
     state: State,
 }
 
 static CSS: Asset = asset!("/style.css");
 static LOGO: Asset = asset!("/public/logo.svg");
+
+#[component]
+fn MainView(model: Model) -> Element {
+    match &model.read().state {
+        State::LoadingData => rsx! { "Fetching position..." },
+        State::Error(e) => rsx! {
+            span { style: "color: red", "{e}" }
+        },
+        State::HasPosition(_) => rsx! { "Loading data..." },
+        State::HasData(_, _) => todo!(),
+    }
+}
 
 #[component]
 fn Main() -> Element {
@@ -64,16 +82,25 @@ fn Main() -> Element {
             Err(e) => State::Error(e),
         };
 
-        Model { state }
+        Model {
+            state,
+            page: Page::Main,
+        }
     });
 
-    match &model.read().state {
-        State::LoadingData => rsx! { "Fetching position..." },
-        State::Error(e) => rsx! {
-            span { style: "color: red", "{e}" }
+    let open_settings = move |_| model.page = Page::Settings;
+
+    match &model.read().page {
+        Page::Main => {
+            rsx! {
+                MainView { model }
+                br {}
+                br {}
+                br {}
+                button { class: "ctl-button", onclick: open_settings, "Settings" }
+            }
         },
-        State::HasPosition(_) => rsx! { "Loading data..." },
-        State::HasData(_, _) => todo!(),
+        Page::Settings => todo!(),
     }
 }
 
