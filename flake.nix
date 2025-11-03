@@ -45,9 +45,10 @@
           packages = with pkgs; [
             androidComposition.androidsdk
             cargo
+            cargo-leptos
             clippy
-            dioxus-cli
             jdk
+            leptosfmt
             lld
             nodejs
             rustc

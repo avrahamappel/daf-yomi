@@ -1,4 +1,4 @@
-use dioxus::prelude::*;
+use leptos::prelude::*;
 
 mod data;
 mod location;
@@ -103,5 +103,7 @@ fn App() -> Element {
 }
 
 fn main() {
-    dioxus::launch(App);
+    console_error_panic_hook::set_once();
+
+    leptos::mount::mount_to_body(App);
 }
