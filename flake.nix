@@ -45,7 +45,6 @@
           packages = with pkgs; [
             androidComposition.androidsdk
             cargo
-            cargo-leptos
             clippy
             jdk
             leptosfmt
@@ -54,6 +53,7 @@
             rustc
             rustfmt
             rust-analyzer
+            trunk
             wasm-bindgen-cli
           ];
 

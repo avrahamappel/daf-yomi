@@ -1,109 +1,121 @@
 use leptos::prelude::*;
 
-mod data;
-mod location;
-mod settings;
-mod switcher;
+//mod data;
+//mod location;
+//mod settings;
+//mod switcher;
 
-use crate::{
-    data::Data,
-    location::{get_location, Position},
-    settings::{update_settings, use_settings},
-    switcher::Switcher,
-};
+//use crate::{
+//data::Data,
+//location::{get_location, Position},
+//settings::{update_settings, use_settings, Settings},
+//switcher::Switcher,
+//};
 
+#[derive(Clone, Copy)]
 enum Page {
     Main,
-    Settings,
+    //Settings,
 }
 
 enum State {
     LoadingData,
-    Error(String),
-    HasPosition(Position),
-    HasData(Data, Position),
+    //Error(String),
+    //HasPosition(Position),
+    //HasData(Data, Position),
 }
 
-struct Model {
-    page: Page,
-    state: State,
-}
+//struct Model {
+//    page: Page,
+//    state: State,
+//    //settings: Settings,
+//}
 
-static CSS: Asset = asset!("/style.css");
-static LOGO: Asset = asset!("/public/logo.svg");
+//static CSS: Asset = asset!("/style.css");
+//static LOGO: Asset = asset!("/public/logo.svg");
 
 #[component]
-fn MainView(model: Model) -> Element {
-    match &model.read().state {
-        State::LoadingData => rsx! { "Fetching position..." },
-        State::Error(e) => rsx! {
-            span { style: "color: red", "{e}" }
-        },
-        State::HasPosition(_) => rsx! { "Loading data..." },
-        State::HasData(_, _) => todo!(),
+fn MainView(#[prop(into)] state: Signal<State>) -> impl IntoView {
+    match *state.read() {
+        State::LoadingData => view! { "Fetching position..." }.into_any(),
+        //State::Error(e) => view! {
+        //    <span style="color:red">e</span>
+        //}
+        //.into_any(),
+        //State::HasPosition(_) => view! { "Loading data..." },
+        //State::HasData(_, _) => todo!(),
     }
 }
 
 #[component]
-fn Main() -> Element {
-    let model = use_signal(|| {
-        let settings = use_settings();
-        let location = get_location(settings);
+fn Main() -> impl IntoView {
+    //let settings = use_settings();
+    //let location = get_location(settings);
+    //
+    //let state = match location {
+    //    Ok(None) => State::LoadingData,
+    //    Ok(Some(position)) => State::HasPosition(position),
+    //    Err(e) => State::Error(e),
+    //};
 
-        let state = match location {
-            Ok(None) => State::LoadingData,
-            Ok(Some(position)) => State::HasPosition(position),
-            Err(e) => State::Error(e),
-        };
+    //Model {
+    //    state: State::LoadingData,
+    //    page: Page::Main,
+    //}
 
-        Model {
-            state,
-            page: Page::Main,
-        }
-    });
+    let (page, set_page) = signal(Page::Main);
+    let (state, set_state) = signal(State::LoadingData);
 
-    let open_settings = move |_| model.page = Page::Settings;
-    let close_settings = move |_| model.page = Page::Main;
-    let save_settings = move |_| {
-        let location = get_location(model.settings);
-        update_settings(model.settings);
-        model.page = Page::Main;
-    };
+    //let open_settings = move |_| set_model.write().page = Page::Settings;
+    //let close_settings = move |_| set_model.write().page = Page::Main;
+    //let save_settings = move |_| {
+    //    let location = get_location(model.read().settings);
+    //    update_settings(model.read().settings);
+    //    set_model.write().page = Page::Main;
+    //};
 
-    match &model.read().page {
+    match page.get() {
         Page::Main => {
-            rsx! {
-                MainView { model }
-                br {}
-                br {}
-                br {}
-                button { class: "ctl-button", onclick: open_settings, "Settings" }
+            view! {
+                <MainView state />
+                <br />
+                <br />
+                <br />
+                //<button class="ctl-button" on:click=open_settings>
+                //    Settings
+                //</button>
             }
         },
-        Page::Settings => {
-            rsx! {
-                SettingsView { settings: model.settings }
-                br {}
-                button { class: "ctl-button", onclick: save_settings, "Save" }
-                button { class: "ctl-button", onclick: close_settings, "Close" }
-            }
-        },
+        //Page::Settings => {
+        //    view! {
+        //        <SettingsView settings=model.read().settings />
+        //        <br />
+        //        <button class="ctl-button" on:click=save_settings>
+        //            Save
+        //        </button>
+        //        <button class="ctl-button" on:click=close_settings>
+        //            Close
+        //        </button>
+        //    }
+        //},
     }
 }
 
 #[component]
-fn App() -> Element {
-    rsx! {
-        document::Title { "Daf Yomi and local Zemanim" }
-        document::Link { rel: "icon", href: LOGO, r#type: "image/svg+xml" }
-        document::Stylesheet { href: CSS }
+fn App() -> impl IntoView {
+    view! {
+    //        document::Title { "Daf Yomi and local Zemanim" }
+    //        document::Link { rel: "icon", href: LOGO, r#type: "image/svg+xml" }
+    //        document::Stylesheet { href: CSS }
 
-        div { id: "app", Main {} }
-    }
+            <div id="app">
+              <Main />
+            </div>
+        }
 }
 
 fn main() {
     console_error_panic_hook::set_once();
 
-    leptos::mount::mount_to_body(App);
+    leptos::mount::mount_to_body(Main);
 }

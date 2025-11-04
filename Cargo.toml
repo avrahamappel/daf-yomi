@@ -10,18 +10,3 @@ leptos = "0.8.12"
 reqwest = "0.12.23"
 serde = { version = "1.0.228", features = ["serde_derive"] }
 wasm-bindgen = "=0.2.104"
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"
-
-[[workspace.metadata.leptos]]
-name = "daf-yomi"
-bin-package = "foo"
-lib-package = "foo"

@@ -1,4 +1,4 @@
-use dioxus::prelude::*;
+use leptos::prelude::*;
 
 enum SwitchEvent {
     Right,
@@ -9,26 +9,26 @@ enum SwitchEvent {
 /// An HTML group consisting of a middle field with a right and left pointing
 /// arrow to increment and decrement the value
 #[component]
-pub fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> Element {
-    rsx! {
-        div { class: "switcher-group",
-            button {
-                class: "switcher-left",
-                onclick: move |_| on_switch(SwitchEvent::Left),
+pub fn Switcher(line1: String, line2: String, on_switch: fn(SwitchEvent)) -> impl IntoView {
+    view! {
+        <div class="switcher-group">
+            <button
+                class="switcher-left"
+                on:click=move |_| on_switch(SwitchEvent::Left)>
                 "<"
-            }
-            button {
-                class: "switcher-middle",
-                onclick: move |_| on_switch(SwitchEvent::Middle),
+            </button>
+            <button
+                class="switcher-middle"
+                on:click=move |_| on_switch(SwitchEvent::Middle)>
                 "{line1}"
-                br {}
+                <br />
                 "{line2}"
-            }
-            button {
-                class: "switcher-right",
-                onclick: move |_| on_switch(SwitchEvent::Right),
+            </button>
+            <button
+                class="switcher-right"
+                on:click=move |_| on_switch(SwitchEvent::Right)>
                 ">"
-            }
-        }
+            </button>
+        </div>
     }
 }
