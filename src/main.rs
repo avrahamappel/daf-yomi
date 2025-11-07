@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use thaw::*;
 
 //mod data;
 //mod location;
@@ -63,8 +64,8 @@ fn Main() -> impl IntoView {
     //    page: Page::Main,
     //}
 
-    let (page, set_page) = signal(Page::Main);
-    let (state, set_state) = signal(State::LoadingData);
+    let (page, _set_page) = signal(Page::Main);
+    let (state, _set_state) = signal(State::LoadingData);
 
     //let open_settings = move |_| set_model.write().page = Page::Settings;
     //let close_settings = move |_| set_model.write().page = Page::Main;
@@ -104,14 +105,10 @@ fn Main() -> impl IntoView {
 #[component]
 fn App() -> impl IntoView {
     view! {
-    //        document::Title { "Daf Yomi and local Zemanim" }
-    //        document::Link { rel: "icon", href: LOGO, r#type: "image/svg+xml" }
-    //        document::Stylesheet { href: CSS }
-
-            <div id="app">
-              <Main />
-            </div>
-        }
+        <ConfigProvider>
+            <Main />
+        </ConfigProvider>
+    }
 }
 
 fn main() {
@@ -123,5 +120,5 @@ fn main() {
         .expect("no #app element")
         .remove();
 
-    leptos::mount::mount_to_body(Main);
+    leptos::mount::mount_to_body(App);
 }
