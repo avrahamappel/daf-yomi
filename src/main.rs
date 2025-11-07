@@ -117,5 +117,11 @@ fn App() -> impl IntoView {
 fn main() {
     console_error_panic_hook::set_once();
 
+    // Remove the static loading div
+    document()
+        .get_element_by_id("app")
+        .expect("no #app element")
+        .remove();
+
     leptos::mount::mount_to_body(Main);
 }
