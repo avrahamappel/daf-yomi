@@ -1,14 +1,17 @@
-import {
-    HDate,
-    Zmanim,
-    GeoLocation,
-    HebrewCalendar,
-    flags,
-    Location,
-    CandleLightingEvent,
-    Sedra
-} from '@hebcal/core'
-import { DafYomi, NachYomiEvent, NachYomiIndex } from '@hebcal/learning'
+import { DailyLearning } from '@hebcal/core/dist/esm/DailyLearning';
+import { ParshaEvent } from '@hebcal/core/dist/esm/ParshaEvent';
+import { CandleLightingEvent } from '@hebcal/core/dist/esm/TimedEvent';
+import { flags } from '@hebcal/core/dist/esm/event';
+import { HebrewCalendar } from '@hebcal/core/dist/esm/hebcal';
+import { Location } from '@hebcal/core/dist/esm/location';
+import { Sedra } from '@hebcal/core/dist/esm/sedra';
+import { Zmanim } from '@hebcal/core/dist/esm/zmanim';
+import { gematriya } from '@hebcal/hdate/dist/esm/gematriya';
+import { HDate } from '@hebcal/hdate/dist/esm/hdate';
+import '@hebcal/learning/dafYomi';
+import '@hebcal/learning/mishnaYomi';
+import '@hebcal/learning/nachYomi';
+import { GeoLocation } from '@hebcal/noaa';
 import { Position } from './location';
 import { Settings } from './settings';
 
@@ -114,18 +117,28 @@ const getErevPesachZemanim = (hdate: HDate, zmn: Zmanim) => {
  * Get the shiurim for the given date
  */
 const getShiurim = (hdate: HDate) => {
-    const dafShiur = {
+    const dafYomiShiur = {
         name: "דף היומי" + '',
-        value: (new DafYomi(hdate)).render('he')
+        value: DailyLearning.lookup('dafYomi', hdate)?.render('he-x-NoNikud').replace('דף יומי: ', ''),
     };
-    const nachYomi = new NachYomiEvent(hdate, (new NachYomiIndex()).lookup(hdate));
+    // TODO: Amud Yomi / Oraysa
+    // const amudYomiShiur = {
+    //     name: "עמוד יומי",
+    //     value: DailyLearning.lookup('amudYomi', hdate)?.render('he'),
+    // };
+    const mishnaYomiShiur = {
+        name: 'משנה יומי',
+        value: DailyLearning.lookup('mishnaYomi', hdate)?.render('he').replace(/\d+/g, gematriya),
+    };
     const nachYomiShiur = {
         name: 'נ״ך יומי',
-        value: nachYomi.render('he-x-NoNikud'),
+        value: DailyLearning.lookup('nachYomi', hdate)?.render('he-x-NoNikud'),
     };
 
     return [
-        dafShiur,
+        dafYomiShiur,
+        // amudYomiShiur,
+        mishnaYomiShiur,
         nachYomiShiur,
     ]
 };
@@ -153,9 +166,9 @@ const getParsha = (hdate: HDate, gloc: GeoLocation): string => {
     })
     const chagStrs = chagEvents.map(ev => ev.render('he-x-NoNikud'));
 
-    const sedra = new Sedra(hdate.getFullYear());
-    if (sedra.isParsha(hdate)) {
-        const parsha = sedra.getString(hdate, 'he-x-NoNikud');
+    const sedra = new Sedra(hdate.getFullYear()).lookup(hdate);
+    if (!sedra.chag) {
+        const parsha = new ParshaEvent(sedra).render('he-x-NoNikud');
         chagStrs.unshift(parsha);
     }
 
