@@ -1,7 +1,7 @@
 import { DailyLearning } from '@hebcal/core/dist/esm/DailyLearning';
 import { ParshaEvent } from '@hebcal/core/dist/esm/ParshaEvent';
 import { CandleLightingEvent } from '@hebcal/core/dist/esm/TimedEvent';
-import { flags } from '@hebcal/core/dist/esm/event';
+import { Event, flags } from '@hebcal/core/dist/esm/event';
 import { HebrewCalendar } from '@hebcal/core/dist/esm/hebcal';
 import { Location } from '@hebcal/core/dist/esm/location';
 import { Sedra } from '@hebcal/core/dist/esm/sedra';
@@ -14,6 +14,25 @@ import '@hebcal/learning/nachYomi';
 import { GeoLocation } from '@hebcal/noaa';
 import { Position } from './location';
 import { Settings } from './settings';
+
+type Zemanim = {
+    zemanim: { name: string; value: number; }[];
+    longitude: string;
+    latitude: string;
+    name: string | null;
+} | string | unknown;
+
+type Data = {
+    date: string;
+    hdate: string;
+    zemanim: Zemanim;
+    shiurim: {
+        name: string;
+        value: string;
+        url: string | undefined;
+    }[];
+    parsha: string;
+};
 
 /**
  * Build an instance of hebcal's GeoLocation
@@ -37,7 +56,7 @@ const getLocation = (gloc: GeoLocation) => new Location(
 
 type Zeman = { name: string, value: number };
 
-const getZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation) => {
+const getZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation): Zemanim => {
     try {
         const zmn = new Zmanim(gloc, hdate);
         const erevPesachZemanim = getErevPesachZemanim(hdate, zmn);
@@ -117,30 +136,17 @@ const getErevPesachZemanim = (hdate: HDate, zmn: Zmanim) => {
  * Get the shiurim for the given date
  */
 const getShiurim = (hdate: HDate) => {
-    const dafYomiShiur = {
-        name: "דף היומי" + '',
-        value: DailyLearning.lookup('dafYomi', hdate)?.render('he-x-NoNikud').replace('דף יומי: ', ''),
-    };
+    const dafYomiShiur = DailyLearning.lookup('dafYomi', hdate) as Event;
     // TODO: Amud Yomi / Oraysa
-    // const amudYomiShiur = {
-    //     name: "עמוד יומי",
-    //     value: DailyLearning.lookup('amudYomi', hdate)?.render('he'),
-    // };
-    const mishnaYomiShiur = {
-        name: 'משנה יומי',
-        value: DailyLearning.lookup('mishnaYomi', hdate)?.render('he').replace(/\d+/g, gematriya),
-    };
-    const nachYomiShiur = {
-        name: 'נ״ך יומי',
-        value: DailyLearning.lookup('nachYomi', hdate)?.render('he-x-NoNikud'),
-    };
+    // const amudYomiShiur = DailyLearning.lookup('amudYomi', hdate);
+    const mishnaYomiShiur = DailyLearning.lookup('mishnaYomi', hdate) as Event;
+    const nachYomiShiur = DailyLearning.lookup('nachYomi', hdate) as Event;
 
     return [
-        dafYomiShiur,
-        // amudYomiShiur,
-        mishnaYomiShiur,
-        nachYomiShiur,
-    ]
+        { name: 'דף היומי', value: dafYomiShiur.render('he-x-NoNikud').replace('דף יומי: ', ''), url: dafYomiShiur.url() },
+        { name: 'משנה יומי', value: mishnaYomiShiur.render('he').replace(/\d+/g, gematriya), url: mishnaYomiShiur.url() },
+        { name: 'נ״ך יומי', value: nachYomiShiur.render('he-x-NoNikud'), url: nachYomiShiur.url() },
+    ];
 };
 
 /**
@@ -175,7 +181,7 @@ const getParsha = (hdate: HDate, gloc: GeoLocation): string => {
     return chagStrs.join(', ');
 };
 
-export const getData = (settings: Settings, timestamp: number, pos: Position) => {
+export const getData = (settings: Settings, timestamp: number, pos: Position): Data => {
     const date = new Date(timestamp);
     const hdate = new HDate(date);
     const gloc = getGeoLocation(pos);

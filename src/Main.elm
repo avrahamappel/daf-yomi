@@ -5,8 +5,8 @@ import Browser
 import Data exposing (..)
 import DateFormat
 import Format exposing (posixToTimeString)
-import Html exposing (Html, br, button, div, span, text)
-import Html.Attributes exposing (class, id, style)
+import Html exposing (Html, a, br, button, div, span, text)
+import Html.Attributes exposing (class, href, id, style, target)
 import Html.Events exposing (onClick)
 import Json.Decode as D
 import Json.Encode
@@ -558,13 +558,17 @@ view model =
                                 GeoError e ->
                                     ( "Error", e, "" )
 
-                        ( shiurimLine1, shiurimLine2 ) =
+                        ( shiurimLine1, shiurimLine2, shiurimUrl ) =
                             case Array.get model.curShiurIndex data.shiurim of
                                 Just shiur ->
-                                    ( shiur.name, shiur.value )
+                                    ( shiur.name, shiur.value, shiur.url )
 
                                 Nothing ->
-                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex )
+                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex, Nothing )
+
+                        urlView =
+                            Maybe.map (\url -> [ a [ href url, target "_blank" ] [ text "Click for text" ] ]) shiurimUrl
+                                |> Maybe.withDefault []
 
                         weekAndDay zone time =
                             let
@@ -596,7 +600,7 @@ view model =
                     [ switcher data.hdate (weekAndDay model.timezone model.dispTime) ChangeDate
                     , div [ class "sub-text" ] [ text data.date ]
                     , switcher shiurimLine1 shiurimLine2 ChangeShiur
-                    , br [] []
+                    , div [ class "sub-text" ] urlView
                     , switcher zemanimLine1 zemanimLine2 ChangeZeman
                     , div [ class "sub-text" ] [ text location ]
                     ]

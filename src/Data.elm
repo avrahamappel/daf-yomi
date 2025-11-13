@@ -81,11 +81,12 @@ type alias Shiurim =
 shiurimDecoder : Decoder Shiurim
 shiurimDecoder =
     D.array
-        (D.map2 Shiur
+        (D.map3 Shiur
             (D.field "name" D.string)
             (D.field "value" D.string)
+            (D.field "url" (D.maybe D.string))
         )
 
 
 type alias Shiur =
-    { name : String, value : String }
+    { name : String, value : String, url : Maybe String }
