@@ -567,7 +567,18 @@ view model =
                                     ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex, Nothing )
 
                         urlView =
-                            Maybe.map (\url -> [ a [ href url, target "_blank" ] [ text "Click for text" ] ]) shiurimUrl
+                            shiurimUrl
+                                |> Maybe.map
+                                    (\url ->
+                                        [ a
+                                            [ href url
+                                            , target "_blank"
+                                            , style "color" "inherit"
+                                            , style "text-decoration" "underline"
+                                            ]
+                                            [ text "Study link" ]
+                                        ]
+                                    )
                                 |> Maybe.withDefault []
 
                         weekAndDay zone time =
