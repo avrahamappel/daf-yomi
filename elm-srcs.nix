@@ -11,13 +11,13 @@
       };
 
       "elm/html" = {
-        sha256 = "1n3gpzmpqqdsldys4ipgyl1zacn0kbpc3g4v3hdpiyfjlgh8bf3k";
-        version = "1.0.0";
+        sha256 = "0ljwld3yk682qimkwdsbf4vb3fsv3y2hlisym94i705gx18dz6l8";
+        version = "1.0.1";
       };
 
       "elm/json" = {
-        sha256 = "0kjwrz195z84kwywaxhhlnpl3p251qlbm5iz6byd6jky2crmyqyh";
-        version = "1.1.3";
+        sha256 = "0w1n61m2b9zbwp1yx8zhvir7gqy66mkm22rpq8hmnvgkcwnhxalb";
+        version = "1.1.4";
       };
 
       "elm/time" = {
