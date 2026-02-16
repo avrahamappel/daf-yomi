@@ -69,6 +69,7 @@ const getZemanim = (settings: Settings, hdate: HDate, gloc: GeoLocation): Zemani
             ...erevPesachZemanim,
             { name: 'סו״ז תפילה (גר"א)', value: zmn.sofZmanTfilla().getTime() },
             { name: 'חצות היום', value: zmn.chatzot().getTime() },
+            { name: 'מנחה גדולה', value: zmn.minchaGedolaMGA().getTime() },
             { name: 'מנחה קטנה', value: zmn.minchaKetanaMGA().getTime() },
             ...erevShabbosYtZemanim,
             { name: 'שקיעת החמה', value: zmn.shkiah().getTime() },
