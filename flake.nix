@@ -41,10 +41,10 @@
 
         # Must match the values in android/app/build.gradle
         # and android/variables.gradle
-        buildToolsVersion = "34.0.0";
+        buildToolsVersion = "35.0.0";
         androidComposition = pkgs.androidenv.composeAndroidPackages {
           buildToolsVersions = [ buildToolsVersion ];
-          platformVersions = [ "35" ];
+          platformVersions = [ "36" ];
         };
         androidEnvironment = rec {
           ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
