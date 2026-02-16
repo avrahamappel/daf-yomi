@@ -75,21 +75,35 @@
         };
 
         packages = {
-          default = pkgs.buildNpmPackage {
-            pname = packageJson.name;
-            version = packageJson.version;
-            src = ./.;
-            npmDepsHash = "sha256-Ttiqd1MDFUEUBeg2r2nOuEjb1XTvjt0rme8CqwSY8dI=";
-            nativeBuildInputs = with pkgs; [ elmPackages.elm ];
-            configurePhase = pkgs.elmPackages.fetchElmDeps {
-              elmPackages = import ./elm-srcs.nix;
-              elmVersion = elmJson.elm-version;
-              registryDat = ./registry.dat;
+          default =
+            let
+              commitHash = self.shortRev or self.dirtyShortRev;
+              commitDate = builtins.concatStringsSep "-" [
+                (builtins.substring 0 4 self.lastModifiedDate)
+                (builtins.substring 4 2 self.lastModifiedDate)
+                (builtins.substring 6 2 self.lastModifiedDate)
+              ];
+            in
+            pkgs.buildNpmPackage {
+              pname = packageJson.name;
+              version = packageJson.version;
+              src = ./.;
+              postPatch = ''
+                echo "Injecting commit data into build script"
+                sed -i 's#commitHash = .*$#commitHash = "${commitHash}"#' hooks/versionInfoPlugin.js
+                sed -i 's#commitDate = .*$#commitDate = "${commitDate}"#' hooks/versionInfoPlugin.js
+              '';
+              npmDepsHash = "sha256-Ttiqd1MDFUEUBeg2r2nOuEjb1XTvjt0rme8CqwSY8dI=";
+              nativeBuildInputs = with pkgs; [ elmPackages.elm ];
+              configurePhase = pkgs.elmPackages.fetchElmDeps {
+                elmPackages = import ./elm-srcs.nix;
+                elmVersion = elmJson.elm-version;
+                registryDat = ./registry.dat;
+              };
+              postInstall = ''
+                cp -r dist $out/
+              '';
             };
-            postInstall = ''
-              cp -r dist $out/
-            '';
-          };
 
           githubPages = self.packages.${system}.default.overrideAttrs {
             npmBuildFlags = [ "--" "--base" "/daf-yomi" ];
