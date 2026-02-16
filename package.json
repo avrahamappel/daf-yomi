@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
+    "@capacitor/core": "^8.1.0",
     "@capacitor/geolocation": "^7.0.0",
     "@hebcal/core": "^6.0.0",
     "@hebcal/learning": "^6.0.0",
