@@ -1,6 +1,7 @@
 #!/usr/bin/env nix
 #!nix develop --command bash
 
+npm install
 npx vite build
 npx cap sync
 cd android || exit 1
