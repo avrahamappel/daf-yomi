@@ -52,8 +52,9 @@
         };
       in
       {
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; with elmPackages; [
+        devShells.default = with pkgs; pkgs.mkShell {
+          packages = with elmPackages; [
+            importNpmLock.linkNodeModulesHook
             androidComposition.androidsdk
             jdk
             elmWrapper
@@ -62,6 +63,11 @@
             elm-format
             nodejs
           ];
+
+          npmDeps = importNpmLock.buildNodeModules {
+            npmRoot = ./.;
+            inherit nodejs;
+          };
 
           env = androidEnvironment;
         };
