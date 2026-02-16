@@ -69,7 +69,9 @@
             inherit nodejs;
           };
 
-          env = androidEnvironment;
+          env = androidEnvironment // {
+            NPM_CONFIG_PACKAGE_LOCK_ONLY = "true";
+          };
         };
 
         packages = {
