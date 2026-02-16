@@ -14,6 +14,7 @@ import Location exposing (Position)
 import Settings exposing (Settings, update, view)
 import Task
 import Time exposing (Month(..), Posix, Weekday(..), Zone)
+import Version
 
 
 
@@ -617,8 +618,13 @@ view model =
                     , button [ class "ctl-button", onClick SaveSettings ] [ text "Save" ]
                     , button [ class "ctl-button", onClick CloseSettings ] [ text "Close" ]
                     ]
+
+        versionInfo =
+            [ div [ class "sub-text", style "margin-top" "5px" ]
+                [ text ("Version: " ++ Version.commit ++ " (" ++ Version.date ++ ")") ]
+            ]
     in
-    div [ id "app" ] vs
+    div [ id "app" ] (vs ++ versionInfo)
 
 
 {-| An HTML group consisting of a middle field with a right and left pointing
