@@ -54,6 +54,7 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; with elmPackages; [
+            importNpmLock.hooks.linkNodeModulesHook
             androidComposition.androidsdk
             jdk
             elmWrapper
@@ -63,6 +64,11 @@
             nodejs
           ];
 
+          npmDeps = pkgs.importNpmLock.buildNodeModules {
+            npmRoot = ./.;
+            inherit (pkgs) nodejs;
+          };
+
           env = androidEnvironment;
         };
 
@@ -71,7 +77,8 @@
             pname = packageJson.name;
             version = packageJson.version;
             src = ./.;
-            npmDepsHash = "sha256-wNcxaSQ/GyZmyL0B4+R2ipctikuVAXhDI3xEkReXBvA=";
+            npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
+            inherit (pkgs.importNpmLock) npmConfigHook;
             nativeBuildInputs = with pkgs; [ elmPackages.elm ];
             configurePhase = pkgs.elmPackages.fetchElmDeps {
               elmPackages = import ./elm-srcs.nix;
