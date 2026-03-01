@@ -617,14 +617,11 @@ view model =
                     , br [] []
                     , button [ class "ctl-button", onClick SaveSettings ] [ text "Save" ]
                     , button [ class "ctl-button", onClick CloseSettings ] [ text "Close" ]
+                    , div [ class "sub-text", style "margin-top" "5px" ]
+                        [ text ("Version: " ++ Version.commit ++ " (" ++ Version.date ++ ")") ]
                     ]
-
-        versionInfo =
-            [ div [ class "sub-text", style "margin-top" "5px" ]
-                [ text ("Version: " ++ Version.commit ++ " (" ++ Version.date ++ ")") ]
-            ]
     in
-    div [ id "app" ] (vs ++ versionInfo)
+    div [ id "app" ] vs
 
 
 {-| An HTML group consisting of a middle field with a right and left pointing
