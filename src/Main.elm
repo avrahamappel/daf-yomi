@@ -4,8 +4,7 @@ import Array
 import Browser
 import Data exposing (..)
 import DateFormat
-import Format exposing (posixToTimeString)
-import Html exposing (Html, br, button, div, span, text)
+import Html exposing (Html, br, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as D
@@ -15,6 +14,7 @@ import Settings exposing (Settings, update, view)
 import Task
 import Time exposing (Month(..), Posix, Weekday(..), Zone)
 import Version
+import Viewer
 
 
 
@@ -518,99 +518,15 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     let
-        mainView =
-            case model.state of
-                LoadingData ->
-                    [ text "Fetching position..." ]
-
-                Error e ->
-                    [ span [ style "color" "red" ] [ text e ] ]
-
-                HasPosition _ ->
-                    [ text "Loading data..." ]
-
-                HasData data _ ->
-                    let
-                        ( zemanimLine1, zemanimLine2, location ) =
-                            case data.zemanimState of
-                                HasZemanim zmnm ->
-                                    let
-                                        locationString =
-                                            case zmnm.locationName of
-                                                Just locationName ->
-                                                    locationName
-
-                                                Nothing ->
-                                                    zmnm.latitude ++ ", " ++ zmnm.longitude
-                                    in
-                                    case Array.get model.curZemanIndex zmnm.zemanim of
-                                        Just zm ->
-                                            ( zm.name
-                                            , posixToTimeString model.timezone zm.value
-                                            , locationString
-                                            )
-
-                                        Nothing ->
-                                            ( "Error"
-                                            , "No entry for index " ++ String.fromInt model.curZemanIndex
-                                            , ""
-                                            )
-
-                                GeoError e ->
-                                    ( "Error", e, "" )
-
-                        ( shiurimLine1, shiurimLine2 ) =
-                            case Array.get model.curShiurIndex data.shiurim of
-                                Just shiur ->
-                                    ( shiur.name, shiur.value )
-
-                                Nothing ->
-                                    ( "Error", "No entry for index " ++ String.fromInt model.curShiurIndex )
-
-                        weekAndDay zone time =
-                            let
-                                weekday =
-                                    case Time.toWeekday zone (Time.millisToPosix time) of
-                                        Sun ->
-                                            "יום א׳"
-
-                                        Mon ->
-                                            "יום ב׳"
-
-                                        Tue ->
-                                            "יום ג׳"
-
-                                        Wed ->
-                                            "יום ד׳"
-
-                                        Thu ->
-                                            "יום ה׳"
-
-                                        Fri ->
-                                            "ע״ש"
-
-                                        Sat ->
-                                            "ש״ק"
-                            in
-                            weekday ++ " " ++ data.parsha
-                    in
-                    [ switcher data.hdate (weekAndDay model.timezone model.dispTime) ChangeDate
-                    , div [ class "sub-text" ] [ text data.date ]
-                    , switcher shiurimLine1 shiurimLine2 ChangeShiur
-                    , br [] []
-                    , switcher zemanimLine1 zemanimLine2 ChangeZeman
-                    , div [ class "sub-text" ] [ text location ]
-                    ]
-
         vs =
             case model.page of
                 Main ->
-                    mainView
-                        ++ [ br [] []
-                           , br [] []
-                           , br [] []
-                           , button [ class "ctl-button", onClick OpenSettings ] [ text "Settings" ]
-                           ]
+                    [ Html.map ViewerEvent (Viewer.view model)
+                    , br [] []
+                    , br [] []
+                    , br [] []
+                    , button [ class "ctl-button", onClick OpenSettings ] [ text "Settings" ]
+                    ]
 
                 Settings ->
                     [ Html.map UpdateSettings (Settings.view model.settings)
@@ -622,25 +538,3 @@ view model =
                     ]
     in
     div [ id "app" ] vs
-
-
-{-| An HTML group consisting of a middle field with a right and left pointing
-arrow to increment and decrement the value
--}
-switcher : String -> String -> (SwitcherMsg -> msg) -> Html msg
-switcher line1 line2 msg =
-    div [ class "switcher-group" ]
-        [ button [ class "switcher-left", onClick (msg Left) ] [ text "<" ]
-        , button [ class "switcher-middle", onClick (msg Middle) ]
-            [ text line1
-            , br [] []
-            , text line2
-            ]
-        , button [ class "switcher-right", onClick (msg Right) ] [ text ">" ]
-        ]
-
-
-type SwitcherMsg
-    = Right
-    | Left
-    | Middle
