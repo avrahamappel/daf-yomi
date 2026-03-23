@@ -12,7 +12,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.2.0",
     "@vitejs/plugin-legacy": "^8.0.0",
-    "terser": "^5.36.0",
+    "terser": "^5.46.1",
     "vite": "^8.0.0",
     "vite-plugin-elm": "^3.0.1"
   },
