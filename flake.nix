@@ -61,9 +61,19 @@
             elm-language-server
             elm-format
             nodejs
+            rustc
+            cargo
+            pkg-config
+            webkitgtk_4_1
+            wrapGAppsHook4
           ];
 
           env = androidEnvironment;
+
+          shellHook = ''
+            # Needed on Wayland to report the correct display scale
+            export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH"
+          '';
         };
 
         packages = {
