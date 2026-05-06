@@ -25,19 +25,7 @@
             ];
           };
 
-        elmWrapper = pkgs.writeShellScriptBin "elm" ''
-          ${pkgs.elmPackages.elm}/bin/elm "$@"
-
-          # Update manifests if elm.json changed
-          if [[ "$(git diff --name-only)" =~ elm.json ]]; then
-            echo 'elm.json changed, updating manifest files'
-            ${pkgs.elm2nix}/bin/elm2nix convert > elm-srcs.nix
-            ${pkgs.elm2nix}/bin/elm2nix snapshot
-          fi
-        '';
-
-        packageJson = builtins.fromJSON (builtins.readFile ./package.json);
-        elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
+        cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 
         # Must match the values in android/app/build.gradle
         # and android/variables.gradle
@@ -53,14 +41,15 @@
       in
       {
         devShells.default = with pkgs; pkgs.mkShell {
-          packages = with elmPackages; [
+          packages = [
             androidComposition.androidsdk
             jdk
-            elmWrapper
-            elm2nix
-            elm-language-server
-            elm-format
-            nodejs
+            bacon
+            cargo
+            clippy
+            rustc
+            rustfmt
+            rust-analyzer
           ];
 
           env = androidEnvironment;
@@ -76,25 +65,19 @@
                 (builtins.substring 6 2 self.lastModifiedDate)
               ];
             in
-            pkgs.buildNpmPackage {
-              pname = packageJson.name;
-              version = packageJson.version;
-              src = ./.;
+            pkgs.rustPlatform.buildRustPackage {
+              pname = cargoToml.name;
+              version = cargoToml.version;
+              src = pkgs.lib.cleanSource ./.;
               postPatch = ''
                 echo "Injecting commit data into build script"
                 sed -i 's#commitHash = .*$#commitHash = "${commitHash}"#' hooks/versionInfoPlugin.js
                 sed -i 's#commitDate = .*$#commitDate = "${commitDate}"#' hooks/versionInfoPlugin.js
               '';
-              npmDepsHash = "sha256-A+1UnMrY5MHereKwwn78mylzkQ3gr2soEOX1rFla+wY=";
-              nativeBuildInputs = with pkgs; [ elmPackages.elm ];
-              configurePhase = pkgs.elmPackages.fetchElmDeps {
-                elmPackages = import ./elm-srcs.nix;
-                elmVersion = elmJson.elm-version;
-                registryDat = ./registry.dat;
+
+              cargoDeps = pkgs.rustPlatform.importCargoLock {
+                lockFile = ./.;
               };
-              postInstall = ''
-                cp -r dist $out/
-              '';
             };
 
           githubPages = self.packages.${system}.default.overrideAttrs {
