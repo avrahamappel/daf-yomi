@@ -1,39 +1,55 @@
-use crate::location::Position;
+use iced::Task;
 
-// TODO: Jiff DateTime or Zoned
-type Time = usize;
+mod data;
+mod location;
+mod settings;
+
+use crate::{
+    data::{Data, Time},
+    location::Position,
+    settings::Settings,
+};
 
 struct Model {
     cur_time: Time,
     cur_shiur_index: usize,
     cur_zeman_index: usize,
-    disp_time:Time,
-    //timezone: TODO: merge with cur_time
+    disp_time: Time,
     page: Page,
     state: State,
     settings: Settings,
 }
 
-enum Page { Main,Settings}
+enum Page {
+    Main,
+    Settings,
+}
 
-enum State { LoadingData, Error(String), HasPosition(Position), HasData(Data,Position) }
+enum State {
+    LoadingData,
+    Error(String),
+    HasPosition(Position),
+    HasData(Data, Position),
+}
 
 fn init() -> (Model, Task) {
     let settings = todo!();
     let model = Model {
-        cur_time:0,
-        cur_shiur_index:0,
-        cur_zeman_index:0,
-        disp_time:0,
-        page:Page::Main,
-        state:State::LoadingData,
+        cur_time: 0,
+        cur_shiur_index: 0,
+        cur_zeman_index: 0,
+        disp_time: 0,
+        page: Page::Main,
+        state: State::LoadingData,
         settings: Settings::from(settings),
     };
     (model, get_current_time)
 }
 
 // TODO: how to do this with iced?
-fn get_current_time() -> Task { todo!() }
+fn get_current_time() -> Task {
+    todo!()
+}
 
 enum Msg {
     None,
@@ -50,7 +66,7 @@ enum Msg {
     SaveSettings,
     UpdateTime(Time),
 }
-    
+
 fn update(msg: Msg, model: Model) -> (Model, Task) {
     use Msg::*;
 
@@ -72,37 +88,38 @@ fn update(msg: Msg, model: Model) -> (Model, Task) {
 
             let task = todo!();
 
-            *model = Model { disp_time, cur_time, cur_zeman_index, ..model };
+            *model = Model {
+                disp_time,
+                cur_time,
+                cur_zeman_index,
+                ..model
+            };
 
             (model, task)
         },
-        SetLocation(position) => {
-            match position {
-                Err(e) => {
-                    *model.state = State::Error(e);
-                    (model, Task::None)
-                },
-                Ok(pos) => {
-                    *model.state = State::HasPosition(pos);
-                    let task = get_data(GetDataArgs {
-                        timestamp: model.disp_time,
-                        position: pos,
-                        settings: model.settings
-                    });
-                    (mode, task)
-                },
-            }
+        SetLocation(position) => match position {
+            Err(e) => {
+                *model.state = State::Error(e);
+                (model, Task::None)
+            },
+            Ok(pos) => {
+                *model.state = State::HasPosition(pos);
+                let task = get_data(GetDataArgs {
+                    timestamp: model.disp_time,
+                    position: pos,
+                    settings: model.settings,
+                });
+                (mode, task)
+            },
         },
         SetData(data) => {
             fn is_same_date(time1: Time, time2: Time) -> bool {
                 todo!();
             }
             let state = match model.state {
-                State::HasPosition(pos) => {
-                    match data {
-                        Ok(d) => State::HasData(d, pos),
-                        Err(e) => State::Error(e),
-                    }
+                State::HasPosition(pos) => match data {
+                    Ok(d) => State::HasData(d, pos),
+                    Err(e) => State::Error(e),
                 },
                 _ => model.state,
             };
@@ -110,7 +127,7 @@ fn update(msg: Msg, model: Model) -> (Model, Task) {
 
             *model.state = state;
             *model.cur_zeman_index = if is_displaying_current_date {
-                upcomingZemanIndex(state,model.cur_time)
+                upcomingZemanIndex(state, model.cur_time)
             } else {
                 model.cur_zeman_index
             };
@@ -142,7 +159,7 @@ fn update(msg: Msg, model: Model) -> (Model, Task) {
             *model.disp_time = new_disp_time;
 
             (mode, Task.none)
-        }
+        },
         ChangeShiur(msg) => todo!(), // Are we hving shiurim in this version?
         ReceiveError(error) => {
             *model.state = State::Error(error);
@@ -162,17 +179,19 @@ fn update(msg: Msg, model: Model) -> (Model, Task) {
         },
         SaveSettings => {
             let settings_json = settings::encode(model.settings);
-            let task = Task.batch([location::get_location(settings_json),
-                store_settings(settings_json)]);
+            let task = Task.batch([
+                location::get_location(settings_json),
+                store_settings(settings_json),
+            ]);
             *model.page = Page::Main;
             (model, task)
         },
-        UpdateTime(_) => (model, get_current_time())
+        UpdateTime(_) => (model, get_current_time()),
     }
 }
 
 /// Figure out what the next upcoming zeman for the current time is
-fn upcoming_zeman_index (state: State , cur_time: Time) -> usize {
+fn upcoming_zeman_index(state: State, cur_time: Time) -> usize {
     todo!() // FIgure out what this is
 }
 
@@ -181,4 +200,3 @@ fn upcoming_zeman_index (state: State , cur_time: Time) -> usize {
 fn main() -> iced::Result {
     iced::application(init, update, view).run()
 }
-
