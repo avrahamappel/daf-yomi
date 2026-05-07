@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+hdate = "0.1.1"
+iced = "0.14.0"
+jiff = "0.2.24"
+rust-zmanim = "0.2.1"
