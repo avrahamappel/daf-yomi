@@ -85,7 +85,7 @@
                 sed -i 's#commitHash = .*$#commitHash = "${commitHash}"#' hooks/versionInfoPlugin.js
                 sed -i 's#commitDate = .*$#commitDate = "${commitDate}"#' hooks/versionInfoPlugin.js
               '';
-              npmDepsHash = "sha256-CiBfyReJ1Qz1eOkBTj06FyoD+W1jzbpWLuSDunq3Rfs=";
+              npmDepsHash = "sha256-bS3KVhqVJXOrRZKKaqrsGt82vb2OC00cf9sAPe4Xq3U=";
               nativeBuildInputs = with pkgs; [ elmPackages.elm ];
               configurePhase = pkgs.elmPackages.fetchElmDeps {
                 elmPackages = import ./elm-srcs.nix;
