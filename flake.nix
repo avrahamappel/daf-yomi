@@ -60,6 +60,7 @@
             elm2nix
             elm-language-server
             elm-format
+            elm-test
             nodejs
           ];
 
