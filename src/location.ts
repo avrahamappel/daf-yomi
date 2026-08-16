@@ -39,11 +39,10 @@ export const getLocation = (settings: Settings, next: (pos: Position) => void, e
         fetch("https://api.ipapi.is", { mode: 'cors' })
             .then((res) => res.json())
             .then((json) => {
-                const { latitude, longitude, city, state } = json.location;
+                const { lat, lon } = json;
                 const position = {
-                    longitude,
-                    latitude,
-                    name: `${city}, ${state}`,
+                    longitude: lon,
+                    latitude: lat,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
                 next(position);
