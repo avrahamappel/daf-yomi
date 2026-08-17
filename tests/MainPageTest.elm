@@ -14,12 +14,17 @@ timezone =
     customZone -240 []
 
 
+currentTime : Int
+currentTime =
+    1786937248405
+
+
 initModel : Model
 initModel =
     { curShiurIndex = 0
-    , curTime = 1786937248405
+    , curTime = currentTime
     , curZemanIndex = 0
-    , dispTime = 1786937248405
+    , dispTime = currentTime
     , page = Main
     , settings =
         { candleLightingMinutes = 15
@@ -74,5 +79,18 @@ tests =
                             update (ChangeDate Right) initModel
                     in
                     Expect.equal nextDateModel.dispTime 1787023648405
+
+            -- FIXME this test fails
+            , test "it remains on the next date after the time is adjusted" <|
+                \_ ->
+                    let
+                        adjustedTimeNextDateModel =
+                            initModel
+                                |> update (ChangeDate Right)
+                                |> Tuple.first
+                                |> update (AdjustTime timezone (millisToPosix (currentTime + 1000)))
+                                |> Tuple.first
+                    in
+                    Expect.equal adjustedTimeNextDateModel.dispTime 1787023648405
             ]
         ]
