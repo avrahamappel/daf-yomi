@@ -1,5 +1,6 @@
 module Settings exposing
-    ( Msg
+    ( LocationMethod(..)
+    , Msg
     , Settings
     , decode
     , encode
