@@ -80,7 +80,7 @@
             pkgs.buildNpmPackage {
               pname = packageJson.name;
               version = packageJson.version;
-              src = ./.;
+              src = pkgs.lib.cleanSource ./.;
               postPatch = ''
                 echo "Injecting commit data into build script"
                 sed -i 's#commitHash = .*$#commitHash = "${commitHash}"#' hooks/versionInfoPlugin.js
@@ -96,6 +96,8 @@
               postInstall = ''
                 cp -r dist $out/
               '';
+              doCheck = true;
+              checkPhase = pkgs.lib.getExe pkgs.elmPackages.elm-test;
             };
 
           githubPages = self.packages.${system}.default.overrideAttrs {
