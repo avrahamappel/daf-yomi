@@ -1,7 +1,7 @@
 import legacyPlugin from '@vitejs/plugin-legacy'
 import { defineConfig } from 'vite'
 import { plugin as elmPlugin } from 'vite-plugin-elm'
-import versionInfoPlugin from './hooks/versionInfoPlugin'
+import versionInfoPlugin from './hooks/versionInfoPlugin.js'
 
 export default defineConfig({
   plugins: [
