@@ -25,6 +25,7 @@ initModel =
     , curTime = currentTime
     , curZemanIndex = 0
     , dispTime = currentTime
+    , hasUserNavigated = False
     , page = Main
     , settings =
         { candleLightingMinutes = 15

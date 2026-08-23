@@ -56,6 +56,7 @@ type alias Model =
     , curShiurIndex : Int
     , curZemanIndex : Int
     , dispTime : Int
+    , hasUserNavigated : Bool
     , timezone : Zone
     , page : Page
     , state : State
@@ -80,6 +81,7 @@ init settings =
     ( { curTime = 0
       , curShiurIndex = 0
       , curZemanIndex = 0
+      , hasUserNavigated = False
       , dispTime = 0
       , timezone = Time.utc
       , page = Main
@@ -188,22 +190,24 @@ update msg model =
                     else
                         model.dispTime
 
+                -- isViewingCurrentZeman =
+                --     let
+                --         eq f =
+                --             let
+                --                 f_ =
+                --                     f model.timezone
+                --             in
+                --             f_ (Time.millisToPosix model.curTime)
+                --                 == f_ (Time.millisToPosix newTime)
+                --
+                --         isSameDate =
+                --             eq Time.toDay || eq toMonthNumber || eq Time.toYear
+                --     in
+                --     isSameDate
+                --         && upcomingZemanIndex model.state model.dispTime
+                --         == model.curZemanIndex
                 isViewingCurrentZeman =
-                    let
-                        eq f =
-                            let
-                                f_ =
-                                    f model.timezone
-                            in
-                            f_ (Time.millisToPosix model.curTime)
-                                == f_ (Time.millisToPosix newTime)
-
-                        isSameDate =
-                            eq Time.toDay || eq toMonthNumber || eq Time.toYear
-                    in
-                    isSameDate
-                        && upcomingZemanIndex model.state model.dispTime
-                        == model.curZemanIndex
+                    model.hasUserNavigated
 
                 newZemanimIndex =
                     upcomingZemanIndex model.state newTime
@@ -336,21 +340,21 @@ update msg model =
 
         ChangeDate switchMsg ->
             let
-                newTime =
+                ( newTime, hasUserNavigated ) =
                     case switchMsg of
                         Right ->
-                            model.dispTime + dayInMillis
+                            ( model.dispTime + dayInMillis, True )
 
                         Left ->
-                            model.dispTime - dayInMillis
+                            ( model.dispTime - dayInMillis, True )
 
                         Middle ->
                             -- Reset to initial
-                            model.curTime
+                            ( model.curTime, False )
             in
             case model.state of
                 HasData _ pos ->
-                    ( { model | dispTime = newTime, state = HasPosition pos }
+                    ( { model | dispTime = newTime, hasUserNavigated = hasUserNavigated, state = HasPosition pos }
                     , getData { timestamp = newTime, position = pos, settings = Settings.encode model.settings }
                     )
 
@@ -362,29 +366,33 @@ update msg model =
                 newIndex curIndex zmnm =
                     case switchMsg of
                         Left ->
-                            (if curIndex == 0 then
+                            ( (if curIndex == 0 then
                                 Array.length zmnm.zemanim
 
-                             else
+                               else
                                 curIndex
-                            )
+                              )
                                 - 1
+                            , True
+                            )
 
                         Right ->
                             let
                                 index =
                                     curIndex + 1
                             in
-                            if index == Array.length zmnm.zemanim then
+                            ( if index == Array.length zmnm.zemanim then
                                 0
 
-                            else
+                              else
                                 index
+                            , True
+                            )
 
                         Middle ->
-                            upcomingZemanIndex model.state model.curTime
+                            ( upcomingZemanIndex model.state model.curTime, False )
 
-                newZemanimIndex =
+                ( newZemanimIndex, hasUserNavigated ) =
                     case model.state of
                         HasData data _ ->
                             case data.zemanimState of
@@ -392,12 +400,12 @@ update msg model =
                                     newIndex model.curZemanIndex zmnm
 
                                 _ ->
-                                    model.curZemanIndex
+                                    ( model.curZemanIndex, False )
 
                         _ ->
-                            model.curZemanIndex
+                            ( model.curZemanIndex, False )
             in
-            ( { model | curZemanIndex = newZemanimIndex }, Cmd.none )
+            ( { model | curZemanIndex = newZemanimIndex, hasUserNavigated = hasUserNavigated }, Cmd.none )
 
         ChangeShiur switchMsg ->
             let
