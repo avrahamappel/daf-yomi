@@ -39,4 +39,19 @@
         sha256 = "1yvb8px2z62xd578ag2q0r5hd1vkz9y7dfkx05355iiy1d7jwq4v";
         version = "1.0.3";
       };
+
+      "elm-explorations/test" = {
+        sha256 = "15ayrylxancgjbdnmb0x7297vx86mn7206mdzihbf1yr4g6hlq3i";
+        version = "2.2.1";
+      };
+
+      "elm/bytes" = {
+        sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
+        version = "1.0.8";
+      };
+
+      "elm/random" = {
+        sha256 = "138n2455wdjwa657w6sjq18wx2r0k60ibpc4frhbqr50sncxrfdl";
+        version = "1.0.0";
+      };
 }
