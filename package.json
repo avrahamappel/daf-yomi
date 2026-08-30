@@ -21,6 +21,6 @@
     "@capacitor/core": "^8.4.0",
     "@capacitor/geolocation": "^8.0.0",
     "@hebcal/core": "^6.8.2",
-    "@hebcal/learning": "^6.9.1"
+    "@hebcal/learning": "^6.11.2"
   }
 }
