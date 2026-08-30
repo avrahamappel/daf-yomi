@@ -81,7 +81,6 @@ tests =
                     in
                     Expect.equal nextDateModel.dispTime 1787023648405
 
-            -- FIXME this test fails
             , test "it remains on the next date after the time is adjusted" <|
                 \_ ->
                     let

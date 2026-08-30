@@ -190,24 +190,8 @@ update msg model =
                     else
                         model.dispTime
 
-                -- isViewingCurrentZeman =
-                --     let
-                --         eq f =
-                --             let
-                --                 f_ =
-                --                     f model.timezone
-                --             in
-                --             f_ (Time.millisToPosix model.curTime)
-                --                 == f_ (Time.millisToPosix newTime)
-                --
-                --         isSameDate =
-                --             eq Time.toDay || eq toMonthNumber || eq Time.toYear
-                --     in
-                --     isSameDate
-                --         && upcomingZemanIndex model.state model.dispTime
-                --         == model.curZemanIndex
                 isViewingCurrentZeman =
-                    model.hasUserNavigated
+                    not model.hasUserNavigated
 
                 newZemanimIndex =
                     upcomingZemanIndex model.state newTime
