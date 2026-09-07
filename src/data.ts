@@ -9,8 +9,10 @@ import { Zmanim } from '@hebcal/core/dist/esm/zmanim';
 import { gematriya } from '@hebcal/hdate/dist/esm/gematriya';
 import { HDate } from '@hebcal/hdate/dist/esm/hdate';
 import '@hebcal/learning/dafYomi';
+import '@hebcal/learning/dirshuDafHalacha';
 import '@hebcal/learning/mishnaYomi';
 import '@hebcal/learning/nachYomi';
+import '@hebcal/learning/perekYomi';
 import { GeoLocation } from '@hebcal/noaa';
 import { Position } from './location';
 import { Settings } from './settings';
@@ -141,12 +143,16 @@ const getShiurim = (hdate: HDate) => {
     // TODO: Amud Yomi / Oraysa
     // const amudYomiShiur = DailyLearning.lookup('amudYomi', hdate);
     const mishnaYomiShiur = DailyLearning.lookup('mishnaYomi', hdate) as Event;
+    const perekYomiShiur = DailyLearning.lookup('perekYomi', hdate) as Event;
     const nachYomiShiur = DailyLearning.lookup('nachYomi', hdate) as Event;
+    const dirshuDafHalachaShiur = DailyLearning.lookup('dirshuDafHalacha', hdate) as Event;
 
     return [
         { name: 'דף היומי', value: dafYomiShiur.render('he-x-NoNikud').replace('דף יומי: ', ''), url: dafYomiShiur.url() },
         { name: 'משנה יומי', value: mishnaYomiShiur.render('he').replace(/\d+/g, gematriya), url: mishnaYomiShiur.url() },
+        { name: 'פרק משניות יומי', value: perekYomiShiur.render('he-x-NoNikud'), url: perekYomiShiur.url() },
         { name: 'נ״ך יומי', value: nachYomiShiur.render('he-x-NoNikud'), url: nachYomiShiur.url() },
+        { name: 'דרשו משנה ברורה', value: dirshuDafHalachaShiur.renderBrief('he-x-NoNikud'), url: dirshuDafHalachaShiur.url() },
     ];
 };
 
