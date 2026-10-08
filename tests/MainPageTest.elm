@@ -80,7 +80,6 @@ tests =
                             update (ChangeDate Right) initModel
                     in
                     Expect.equal nextDateModel.dispTime 1787023648405
-
             , test "it remains on the next date after the time is adjusted" <|
                 \_ ->
                     let
@@ -92,5 +91,14 @@ tests =
                                 |> Tuple.first
                     in
                     Expect.equal adjustedTimeNextDateModel.dispTime 1787023648405
+            , test "it updates dispTime when a second passes if dispTime was not manually changed" <|
+                \_ ->
+                    let
+                        adjustedTimeModel =
+                            initModel
+                                |> update (AdjustTime timezone (millisToPosix (currentTime + 1000)))
+                                |> Tuple.first
+                    in
+                    Expect.equal adjustedTimeModel.dispTime 1786937249405
             ]
         ]
