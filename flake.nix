@@ -39,6 +39,21 @@
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
         elmJson = builtins.fromJSON (builtins.readFile ./elm.json);
 
+        # inherit (pkgs) lib;
+        #
+        # # Wasm-bindgen
+        # wasmBindgenVersion = (lib.findFirst (p: p.name == "wasm-bindgen") { }
+        #   (fromTOML (lib.readFile ./Cargo.lock)).package).version;
+        # wasmBindgenHashes = {
+        #   "0.2.127" = "sha256-di+qBAdd7pENLiIB9CoZoab+W5xeDoByMREcCGTSzWo=";
+        # };
+        # wasm-bindgen-cli = pkgs.wasm-bindgen-cli.overrideAttrs (final: prev: {
+        #   version = wasmBindgenVersion;
+        #   src = prev.src.overrideAttrs {
+        #     hash = wasmBindgenHashes.${final.version} or lib.fakeHash;
+        #   };
+        # });
+
         # Must match the values in android/app/build.gradle
         # and android/variables.gradle
         buildToolsVersion = "35.0.0";
@@ -62,6 +77,14 @@
             elm-format
             elm-test
             nodejs
+
+            # Rust
+            cargo
+            clippy
+            rust-analyzer
+            rustc
+            rustfmt
+            wasm-bindgen-cli
           ];
 
           env = androidEnvironment;
